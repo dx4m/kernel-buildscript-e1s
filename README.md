@@ -8,6 +8,16 @@ This repository contains a simple build script and environment setup for compili
 - Support for custom build arguments (e.g. `--enable-kernelsu`)
 - `--disable-samsung-protection` is enabled by default, otherwise your device won't boot.
 
+## Different branches
+This is the main branch. With this you can build the kernel without any ksu or susfs functions.
+To build with sukisu and susfs use the suki-susfs branch or use the main branch and clone your flavor of ksu into the kernel.
+Please follow the ksu build guides and build your kernel on the main branch with:
+```bash
+./build_kernel.sh --enable-kernelsu
+```
+
+On the suki-susfs branch the `--enable-kernelsu` is not needed because it's enabled by default.
+
 ## Requirements
 
 - Linux environment (tested on WSL2 + Ubuntu)
@@ -75,5 +85,9 @@ Special thanks to:
 - [AOSP Kernel Sources](https://android.googlesource.com/kernel/manifest/)
 - [Samsung Kernel Source](https://github.com/dx4m/android-kernel-samsung-e1s)
 - [Kernel Buildscript](https://github.com/dx4m/kernel_buildscript_gts10fewifi) for the Galaxy Tab S10 FE where this bases on
-- [KernelSU Project](https://github.com/tiann/KernelSU)
+- [susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu)
 
+## KSU flavors
+- [KernelSU](https://github.com/tiann/KernelSU)
+- [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next)
+- [SukiSU Ultra](https://github.com/sukisu-ultra/sukisu-ultra)

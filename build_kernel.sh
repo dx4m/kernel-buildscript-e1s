@@ -20,8 +20,9 @@ ENABLE_KERNELSU=true
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
+CONFIG=false
 
-VERSION="android14-11"
+VERSION="android14-11-sukisu-susfs"
 TARGETSOC="s5e9945"
 
 if [ ! -d $PREBUILTS ]; then
@@ -46,6 +47,10 @@ while [[ $# -gt 0 ]]; do
             ;;
 		menuconfig)
             MENUCONFIG=true
+            shift
+            ;;
+		config)
+            CONFIG=true
             shift
             ;;
 		clean)
@@ -102,6 +107,16 @@ export HOSTLDFLAGS="${SYSROOT_FLAGS} ${LDFLAGS}"
 TARGET_DEFCONFIG="${1:-e1s_defconfig}"
 ARGS="CC=clang LD=ld.lld ARCH=arm64 LLVM=1 LLVM_IAS=1"
 
+if [ "$CONFIG" = true ]; then
+	make -j"$(nproc)" \
+     -C "${KERNEL_DIR}" \
+     O="${OUTPUT_DIR}" \
+     ${ARGS} \
+     "${TARGET_DEFCONFIG}"
+	 
+	exit 1
+fi
+
 if [ "$MENUCONFIG" = true ]; then
 	make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \
@@ -130,18 +145,7 @@ if [ "$ENABLE_KERNELSU" = true ]; then
 	else
 		DISABLE_SAMSUNG_PROTECTION=true
 		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-			-e CONFIG_KSU -e CONFIG_KSU_KPROBES_HOOK \
-			-e CONFIG_KSU_SUSFS -e CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT \
-  			-e CONFIG_KSU_SUSFS_SUS_PATH -e CONFIG_KSU_SUSFS_SUS_MOUNT \
-  			-e CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT \
-  			-e CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT \
-  			-e CONFIG_KSU_SUSFS_SUS_KSTAT -d CONFIG_KSU_SUSFS_SUS_OVERLAYFS \
-  			-e CONFIG_KSU_SUSFS_TRY_UMOUNT \
-  			-e CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT \
-  			-e CONFIG_KSU_SUSFS_SPOOF_UNAME -e CONFIG_KSU_SUSFS_ENABLE_LOG \
-  			-e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
-  			-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-  			-e CONFIG_KSU_SUSFS_OPEN_REDIRECT -d CONFIG_KSU_SUSFS_SUS_SU
+			-e CONFIG_KSU -e CONFIG_KSU_KPROBES_HOOK 
 	fi
 fi
 
@@ -168,7 +172,7 @@ fi
 sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion
 
 # Compile
-make -j"$(nproc)" \
+KBUILD_BUILD_USER="build-user" KBUILD_BUILD_HOST="build-host" make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \

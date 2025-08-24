@@ -29,7 +29,7 @@ function getAOSPBuildtools() {
 
 function getSamsungKernel() {
 	echo "[💠] Getting Samsung kernel for S24 (Exynos) from github"
-	mkdir $KERNELBUILD && cd $KERNELBUILD
+	cd $KERNELBUILD
 	git clone http://github.com/dx4m/android-kernel-samsung-e1s.git -b main common
 	cd ..
 	echo "[✅] Done."
@@ -73,6 +73,10 @@ function getSukiSU() {
 }
 
 if [ ! -d $KERNELBUILD ]; then
+	mkdir $KERNELBUILD
+fi
+
+if [ ! -d $KERNELBUILD/common ]; then
 	getSamsungKernel
 	getSukiSU
 fi

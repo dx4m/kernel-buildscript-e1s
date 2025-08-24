@@ -73,7 +73,7 @@ Special thanks to:
 
 ## Resources
 - [AOSP Kernel Sources](https://android.googlesource.com/kernel/manifest/)
-- [Samsung Kernel Source](https://github.com/dx4m/android-kernel-samsung-e1q)
+- [Samsung Kernel Source](https://github.com/dx4m/android-kernel-samsung-e1s)
 - [Kernel Buildscript](https://github.com/dx4m/kernel_buildscript_gts10fewifi) for the Galaxy Tab S10 FE where this bases on
 - [KernelSU Project](https://github.com/tiann/KernelSU)
 

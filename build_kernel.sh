@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
 		config)
-            MENUCONFIG=true
+            CONFIG=true
             shift
             ;;
 		clean)

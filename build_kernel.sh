@@ -20,6 +20,7 @@ ENABLE_KERNELSU=false
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
+CONFIG=false
 
 VERSION="android14-11"
 TARGETSOC="s5e9945"
@@ -45,6 +46,10 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
 		menuconfig)
+            MENUCONFIG=true
+            shift
+            ;;
+		config)
             MENUCONFIG=true
             shift
             ;;
@@ -101,13 +106,28 @@ export HOSTLDFLAGS="${SYSROOT_FLAGS} ${LDFLAGS}"
 
 TARGET_DEFCONFIG="${1:-e1s_defconfig}"
 ARGS="CC=clang LD=ld.lld ARCH=arm64 LLVM=1 LLVM_IAS=1"
+CONFIG_FILE="${OUTPUT_DIR}/.config"
+
+if [ -f out/.config ]; then
+	TARGET_DEFCONFIG="oldconfig"
+fi
+
+if [ "$CONFIG" = true ]; then
+	make -j"$(nproc)" \
+     -C "${KERNEL_DIR}" \
+     O="${OUTPUT_DIR}" \
+     ${ARGS} \
+     "${TARGET_DEFCONFIG}"
+	exit 1
+fi
 
 if [ "$MENUCONFIG" = true ]; then
 	make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \
-     "${TARGET_DEFCONFIG}" menuconfig
+	"${TARGET_DEFCONFIG}" HOSTCFLAGS="${CFLAGS}" HOSTLDFLAGS="${LDFLAGS}" menuconfig
+	exit 1
 else
 	make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \
@@ -117,7 +137,6 @@ else
      "${TARGET_DEFCONFIG}"
 fi
 
-CONFIG_FILE="${OUTPUT_DIR}/.config"
 if [[ ! -f "${CONFIG_FILE}" ]]; then
   echo "[❌] .config not found at ${CONFIG_FILE}"
   exit 1

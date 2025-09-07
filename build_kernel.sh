@@ -199,7 +199,7 @@ echo "LOCALVERSION: $LOCALVERSION"
 sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion
 
 # Compile
-make -j"$(nproc)" \
+KBUILD_BUILD_USER="build-user" KBUILD_BUILD_HOST="build-host" make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \

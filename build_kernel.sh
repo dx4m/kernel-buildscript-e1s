@@ -35,6 +35,8 @@ if [ ! -d $KERNEL_DIR ]; then
 	exit 1
 fi
 
+set -e
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --disable-samsung-protection)

@@ -21,8 +21,10 @@ MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
 CONFIG=false
+SETVERSION=""
+LOCALVERSION=""
 
-VERSION="android14-11"
+VERSION="-android14-11"
 TARGETSOC="s5e9945"
 
 if [ ! -d $PREBUILTS ]; then
@@ -65,8 +67,7 @@ while [[ $# -gt 0 ]]; do
             ;;
 		--version)
 			shift
-			VERSION="$1"
-			echo "$VERSION"
+			SETVERSION="$1"
 			shift
 			;;
         *)
@@ -118,7 +119,7 @@ TARGET_DEFCONFIG="${1:-e1s_defconfig}"
 ARGS="CC=clang LD=ld.lld ARCH=arm64 LLVM=1 LLVM_IAS=1"
 CONFIG_FILE="${OUTPUT_DIR}/.config"
 
-if [ -f out/.config ]; then
+if [ -f "${CONFIG_FILE}" ]; then
 	TARGET_DEFCONFIG="oldconfig"
 fi
 
@@ -178,9 +179,21 @@ if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
 		-e CONFIG_TMPFS_XATTR -e CONFIG_TMPFS_POSIX_ACL
 fi
 
+LOCALVERSION=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --state CONFIG_LOCALVERSION)
+
+if [ -z "$LOCALVERSION" ]; then
+	LOCALVERSION="${VERSION}"
+fi
+
+if [[ ! -z "$SETVERSION" ]]; then
+	LOCALVERSION="${SETVERSION}"
+fi
+
+echo "LOCALVERSION: $LOCALVERSION"
+
 # Change LOCALVERSION
 "${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-  --set-str CONFIG_LOCALVERSION "-$VERSION" -d CONFIG_LOCALVERSION_AUTO
+  --set-str CONFIG_LOCALVERSION "$LOCALVERSION" -d CONFIG_LOCALVERSION_AUTO
   
 # Fix Kernel Version to remove +
 sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion

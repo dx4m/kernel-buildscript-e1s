@@ -61,6 +61,12 @@ while [[ $# -gt 0 ]]; do
             PRINTHELP=true
             shift
             ;;
+		--version)
+			shift
+			VERSION="$1"
+			echo "$VERSION"
+			shift
+			;;
         *)
             OTHER_ARGS+=("$1")
             shift
@@ -69,12 +75,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$PRINTHELP" = true ]; then
-	echo "build_kernel.sh [OPTIONS]"
+	echo "build_kernel.sh [COMMAND/OPTIONS]"
 	echo "OPTIONS:"
 	echo "	--disable-samsung-protection (DEFAULT)"
 	echo "	--enable-kernelsu (Enables KernelSU/SukiSU Ultra in config. Follow KernelSU building guide)"
 	echo "	--help (Prints this message)"
 	echo "	menuconfig (opens menuconfig)"
+	echo "  config (Builds the .config)"
+	echo "  clean (cleans the out dir)"
 	exit 1
 fi
 

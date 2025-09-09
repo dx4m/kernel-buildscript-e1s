@@ -21,8 +21,17 @@ CURRENT_DIR="$(pwd)"
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
 	mkdir $BUILDCHAIN && cd $BUILDCHAIN
-	repo init -u https://android.googlesource.com/kernel/manifest -b common-android15-6.6
-	repo sync
+
+	# Only do a shallow pull: we do not need all version history
+	repo init --depth=1 -u https://android.googlesource.com/kernel/manifest -b common-android15-6.6
+
+	# Check for updates and apply updates to disk separately with different parallelism
+
+	# -c, --current-branch | fetch only the current branch from the server
+  # -j, --jobs           | number of jobs to run in parallel
+	repo sync -c -n -j 4  # -n, --network-only   | only fetch data from the network ; don't update the working directory
+	repo sync -c -l -j 16 # -l, --local-only     | only update the working directory; don't fetch from the network
+
 	cd ..
 	echo "[✅] Done."
 }

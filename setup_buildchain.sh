@@ -21,7 +21,7 @@ CURRENT_DIR="$(pwd)"
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
 	mkdir $BUILDCHAIN && cd $BUILDCHAIN
-	repo init -u https://android.googlesource.com/kernel/manifest -b common-android15-6.6
+	repo init --depth=1 -u https://android.googlesource.com/kernel/manifest -b common-android15-6.6
 	repo sync
 	cd ..
 	echo "[✅] Done."

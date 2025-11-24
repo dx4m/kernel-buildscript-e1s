@@ -53,23 +53,21 @@ function removeAOSPBuildchain() {
 }
 
 function getSukiSU() {
-	echo "[💠] Getting SukiSU with SUSFS"
-	cd $KERNEL_DIR
-	curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
-	cd ..
-	git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
-	cd $CURRENT_DIR
-	cp $KERNEL_DIR/../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch $KERNEL_DIR/
-	cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/fs/* $KERNEL_DIR/fs/
-	cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/include/linux/* $KERNEL_DIR/include/linux/
-	cp $CURRENT_DIR/namespace.patch $KERNEL_DIR/fs/namespace.patch
+        echo "[💠] Getting SukiSU with SUSFS"
+        cd $KERNEL_DIR
+        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+        cd ..
+        git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
+        cd $CURRENT_DIR
+        cp $KERNEL_DIR/../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch $KERNEL_DIR/
+        cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/fs/* $KERNEL_DIR/fs/
+        cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/include/linux/* $KERNEL_DIR/include/linux/
 
-	cd $KERNEL_DIR
-	patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
-	cd fs/
-	patch -p2 < namespace.patch
-	cd $CURRENT_DIR
-	echo "[✅] Done. Ignore the first patch error from namespace, we patch it with the second patch"
+        cd $KERNEL_DIR
+        patch -p1 < $CURRENT_DIR/susfs.patch
+        patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
+        cd $CURRENT_DIR
+        echo "[✅] Done."
 }
 
 if [ ! -d $KERNELBUILD ]; then

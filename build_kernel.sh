@@ -160,7 +160,7 @@ if [ "$ENABLE_KERNELSU" = true ]; then
 	else
 		DISABLE_SAMSUNG_PROTECTION=true
 		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-			-e CONFIG_KSU -d CONFIG_KSU_KPROBES_HOOK
+			-e CONFIG_KSU -d CONFIG_KSU_KPROBES_HOOK -e CONFIG_KPM
 	fi
 fi
 

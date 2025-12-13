@@ -24,7 +24,7 @@ CONFIG=false
 SETVERSION=""
 LOCALVERSION=""
 
-VERSION="-android14-11-sukisu-susfs"
+VERSION="-android14-11-dx4m"
 TARGETSOC="s5e9945"
 
 if [ ! -d $PREBUILTS ]; then
@@ -159,7 +159,13 @@ if [ "$ENABLE_KERNELSU" = true ]; then
 	else
 		DISABLE_SAMSUNG_PROTECTION=true
 		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-			-e CONFIG_KSU -e CONFIG_KSU_KPROBES_HOOK 
+			-e CONFIG_KSU -e CONFIG_KPM -e CONFIG_KSU_MANUAL_SU \
+			-e CONFIG_KSU_NONE_HOOK \
+			-e CONFIG_KSU_SUSFS -e CONFIG_KSU_SUSFS_SUS_PATH -e CONFIG_KSU_SUSFS_SUS_MOUNT \
+			-e CONFIG_KSU_SUSFS_SUS_KSTAT -e CONFIG_KSU_SUSFS_SPOOF_UNAME \
+			-e CONFIG_KSU_SUSFS_ENABLE_LOG -e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
+			-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG -e CONFIG_KSU_SUSFS_OPEN_REDIRECT \
+			-e CONFIG_KSU_SUSFS_SUS_MAP
 	fi
 fi
 
@@ -173,9 +179,6 @@ if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
 		-d GAF -d GAF_V6 -d FIVE_CERT_USER -d FIVE_DEFAULT_HASH \
 		-e CONFIG_TMPFS_XATTR -e CONFIG_TMPFS_POSIX_ACL
 
-	
-	"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-		-e CONFIG_TMPFS_XATTR -e CONFIG_TMPFS_POSIX_ACL
 fi
 
 LOCALVERSION=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --state CONFIG_LOCALVERSION)
@@ -194,7 +197,7 @@ echo "LOCALVERSION: $LOCALVERSION"
 "${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
   --set-str CONFIG_LOCALVERSION "$LOCALVERSION" -d CONFIG_LOCALVERSION_AUTO
 
-# Fix Kernel Version to remove +
+# Fix Kernel Version to remove + (The + stands for dirty kernel -- because we patch it and the changes are not in a commit)
 sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion
 
 # Compile

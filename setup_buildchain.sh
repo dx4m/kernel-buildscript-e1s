@@ -53,10 +53,16 @@ function removeAOSPBuildchain() {
 }
 
 function getSukiSU() {
-        echo "[💠] Getting SukiSU with SUSFS"
+        echo "[💠] Getting SukiSU Ultra"
         cd $KERNEL_DIR
-        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
-        cd ..
+        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
+        cd $CURRENT_DIR
+        echo "[✅] Done."
+}
+
+function getSuSFS(){
+	echo "[💠] Getting SuSFS"
+	cd $KERNEL_DIR/../
         git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
         cd $CURRENT_DIR
         cp $KERNEL_DIR/../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch $KERNEL_DIR/
@@ -64,8 +70,7 @@ function getSukiSU() {
         cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/include/linux/* $KERNEL_DIR/include/linux/
 
         cd $KERNEL_DIR
-        patch -p1 < $CURRENT_DIR/susfs.patch
-        patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
+        patch -p1 --fuzz=3 < 50_add_susfs_in_gki-android14-6.1.patch
         cd $CURRENT_DIR
         echo "[✅] Done."
 }
@@ -77,6 +82,7 @@ fi
 if [ ! -d $KERNELBUILD/common ]; then
 	getSamsungKernel
 	getSukiSU
+	getSuSFS
 fi
 
 if [ ! -d $PREBUILTS ]; then

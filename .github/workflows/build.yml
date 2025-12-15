@@ -63,7 +63,7 @@ jobs:
 
       - name: Cleanup Runner
         run: |
-          ./build_kernel clean
+          ./build_kernel.sh clean
           ./setup_buildchain.sh --cleanup
   release:
     if: github.event_name == 'workflow_dispatch'

@@ -84,18 +84,18 @@ if [ "$PRINTHELP" = true ]; then
 	echo "	menuconfig (opens menuconfig)"
 	echo "  config (Builds the .config)"
 	echo "  clean (cleans the out dir)"
-	exit 1
+	exit 0
 fi
 
 if [ "$CLEAN" = true ]; then
 	if [ ! -d $OUTPUT_DIR ]; then
 		echo "[✅] Already clean."
-		exit 1
+		exit 0
 	fi
 	
 	rm -rf $OUTPUT_DIR
 	echo "[✅] Cleaned output."
-	exit 1
+	exit 0
 fi
 
 export PATH="${PREBUILTS}/build-tools/linux-x86/bin:${PATH}"
@@ -128,7 +128,7 @@ if [ "$CONFIG" = true ]; then
      O="${OUTPUT_DIR}" \
      ${ARGS} \
      "${TARGET_DEFCONFIG}"
-	exit 1
+	exit 0
 fi
 
 if [ "$MENUCONFIG" = true ]; then
@@ -137,7 +137,7 @@ if [ "$MENUCONFIG" = true ]; then
      O="${OUTPUT_DIR}" \
      ${ARGS} \
      "${TARGET_DEFCONFIG}" HOSTCFLAGS="${CFLAGS}" HOSTLDFLAGS="${LDFLAGS}" menuconfig
-	 exit 1
+	 exit 0
 else
 	make -j"$(nproc)" \
      -C "${KERNEL_DIR}" \

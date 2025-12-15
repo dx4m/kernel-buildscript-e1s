@@ -15,8 +15,13 @@ EXTERNAL="${KERNELBUILD}/external"
 BUILD="${KERNELBUILD}/build"
 
 KERNEL_DIR="${KERNELBUILD}/common"
-DEFCONFIG_DIR="${KERNEL_DIR}/arch/arm64/configs/e1s_defconfig"
 CURRENT_DIR="$(pwd)"
+
+#Runner variable
+ENABLE_RUNNER=false
+CLEANUP_RUNNER=false
+GETSUKIVERSION=false
+GETTAGVERSION=false
 
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
@@ -41,6 +46,24 @@ function movePrebuilts() {
 	mv $BUILDCHAIN/prebuilts $PREBUILTS
 	mv $BUILDCHAIN/external $EXTERNAL
 	mv $BUILDCHAIN/build $BUILD
+	echo "[✅] Done."
+}
+
+function copyPrebuilts() {
+	echo "[💠] Copying buildchain from AOSP Buildchain to ${KERNELBUILD} folder"
+	cp -r $BUILDCHAIN/tools $TOOLS
+	cp -r $BUILDCHAIN/prebuilts $PREBUILTS
+	cp -r $BUILDCHAIN/external $EXTERNAL
+	cp -r $BUILDCHAIN/build $BUILD
+	echo "[✅] Done."
+}
+
+function rmPrebuilts() {
+	echo "[💠] Removing buildchain from ${KERNELBUILD} folder"
+	rm -rf $TOOLS
+	rm -rf $PREBUILTS
+	rm -rf $EXTERNAL
+	rm -rf $BUILD
 	echo "[✅] Done."
 }
 
@@ -75,21 +98,96 @@ function getSuSFS(){
         echo "[✅] Done."
 }
 
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --runner)
+            ENABLE_RUNNER=true
+            shift
+            ;;
+		--cleanup)
+            CLEANUP_RUNNER=true
+            shift
+            ;;
+		--getSukiVer)
+            GETSUKIVERSION=true
+            shift
+            ;;
+		--getTagVer)
+            GETTAGVERSION=true
+            shift
+            ;;
+        *)
+            OTHER_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ "$GETTAGVERSION" = true ]; then
+	if [ ! -d $KERNEL_DIR/KernelSU ]; then
+		exit 1
+	fi
+	
+	cd $KERNEL_DIR/KernelSU
+	echo "$(git tag --sort=-v:refname | head -n1)-$(git rev-parse --short HEAD)"
+	cd $CURRENT_DIR
+	exit 0
+fi
+
+if [ "$GETSUKIVERSION" = true ]; then
+	if [ ! -d $KERNEL_DIR/KernelSU ]; then
+		exit 1
+	fi
+	
+	cd $KERNEL_DIR/KernelSU
+	echo "$(git tag --sort=-v:refname | head -n1)-$(git rev-parse --short HEAD)@$(git branch --show-current)"
+	cd $CURRENT_DIR
+	exit 0
+fi
+
+if [ "$CLEANUP_RUNNER" = true ]; then
+	rmPrebuilts
+	exit 0
+fi
+
 if [ ! -d $KERNELBUILD ]; then
 	mkdir $KERNELBUILD
 fi
 
-if [ ! -d $KERNELBUILD/common ]; then
+if [ "$ENABLE_RUNNER" = true ]; then
+	if [ -d $KERNELBUILD/common ]; then
+		rm -rf $KERNELBUILD/common
+	fi
+	
+	if [ -d $KERNELBUILD/susfs4ksu ]; then
+		rm -rf $KERNELBUILD/susfs4ksu
+	fi
+	
 	getSamsungKernel
 	getSukiSU
 	getSuSFS
-fi
-
-if [ ! -d $PREBUILTS ]; then
-	if [ ! -d $BUILDCHAIN ]; then
-		getAOSPBuildtools
+	
+	if [ ! -d $PREBUILTS ]; then
+		if [ ! -d $BUILDCHAIN ]; then
+			getAOSPBuildtools
+		fi
+	
+		copyPrebuilts
 	fi
 	
-	movePrebuilts
-	removeAOSPBuildchain
+else
+	if [ ! -d $KERNELBUILD/common ]; then
+		getSamsungKernel
+		getSukiSU
+		getSuSFS
+	fi
+
+	if [ ! -d $PREBUILTS ]; then
+		if [ ! -d $BUILDCHAIN ]; then
+			getAOSPBuildtools
+		fi
+	
+		movePrebuilts
+		removeAOSPBuildchain
+	fi
 fi

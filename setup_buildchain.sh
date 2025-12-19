@@ -223,7 +223,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 	fi
 	
 	if [ "$DISABLESUSFS" = false]; then
-		getSusFS
+		getSuSFS
 	fi
 	
 	if [ ! -d $PREBUILTS ]; then
@@ -242,7 +242,7 @@ else
 		fi
 	
 		if [ "$DISABLESUSFS" = false ]; then
-			getSusFS
+			getSuSFS
 		fi
 	fi
 

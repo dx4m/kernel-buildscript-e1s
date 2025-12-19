@@ -22,6 +22,11 @@ ENABLE_RUNNER=false
 CLEANUP_RUNNER=false
 GETSUKIVERSION=false
 GETTAGVERSION=false
+GETKERNELVERSION=false
+DISABLESUSFS=false
+DISABLESUKI=false
+CLEAN_KERNEL=false
+SAMSUNG_PATCH_LEVEL=false
 
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
@@ -116,12 +121,54 @@ while [[ $# -gt 0 ]]; do
             GETTAGVERSION=true
             shift
             ;;
+		--getKernelVer)
+            GETKERNELVERSION=true
+            shift
+            ;;
+		--getSamsungPatchLevel)
+            SAMSUNG_PATCH_LEVEL=true
+            shift
+            ;;
+		--disableSuSFS)
+            DISABLESUSFS=true
+            shift
+            ;;
+		--disableSuki)
+            DISABLESUKI=true
+            shift
+            ;;
+		--cleanKernel)
+            CLEAN_KERNEL=true
+            shift
+            ;;
         *)
             OTHER_ARGS+=("$1")
             shift
             ;;
     esac
 done
+
+if [ "$SAMSUNG_PATCH_LEVEL" = true ]; then
+	if [ ! -d $KERNEL_DIR ]; then
+		exit 1
+	fi
+	
+	cd $KERNEL_DIR
+	echo "$(make sampatchlevel)"
+	cd $CURRENT_DIR
+	exit 0
+fi
+
+if [ "$GETKERNELVERSION" = true ]; then
+	if [ ! -d $KERNEL_DIR ]; then
+		exit 1
+	fi
+	
+	cd $KERNEL_DIR
+	echo "$(make kernelversion)-g$(git rev-parse --short HEAD)"
+	cd $CURRENT_DIR
+	exit 0
+fi
 
 if [ "$GETTAGVERSION" = true ]; then
 	if [ ! -d $KERNEL_DIR/KernelSU ]; then
@@ -150,6 +197,12 @@ if [ "$CLEANUP_RUNNER" = true ]; then
 	exit 0
 fi
 
+if [ "$CLEAN_KERNEL" = true ]; then
+	if [ -d $KERNELBUILD/common ]; then
+		rm -rf $KERNELBUILD/common
+	fi
+fi
+
 if [ ! -d $KERNELBUILD ]; then
 	mkdir $KERNELBUILD
 fi
@@ -164,8 +217,14 @@ if [ "$ENABLE_RUNNER" = true ]; then
 	fi
 	
 	getSamsungKernel
-	getSukiSU
-	getSuSFS
+	
+	if [ "$DISABLESUKI" = false ]; then
+		getSukiSU
+	fi
+	
+	if [ "$DISABLESUSFS" = false]; then
+		getSusFS
+	fi
 	
 	if [ ! -d $PREBUILTS ]; then
 		if [ ! -d $BUILDCHAIN ]; then
@@ -178,8 +237,13 @@ if [ "$ENABLE_RUNNER" = true ]; then
 else
 	if [ ! -d $KERNELBUILD/common ]; then
 		getSamsungKernel
-		getSukiSU
-		getSuSFS
+		if [ "$DISABLESUKI" = false ]; then
+			getSukiSU
+		fi
+	
+		if [ "$DISABLESUSFS" = false ]; then
+			getSusFS
+		fi
 	fi
 
 	if [ ! -d $PREBUILTS ]; then

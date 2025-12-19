@@ -1,0 +1,98 @@
+name: Build clean Kernel
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          clean: 'false'
+
+      - name: Initialize GPG Signing Key
+        env:
+          GPG_SIGN_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+        run: |
+          if [ -n "$GPG_SIGN_KEY" ]; then
+            echo -n "$GPG_SIGN_KEY" | gpg --import
+          else
+            echo "No GPG key provided, skipping signing"
+          fi
+
+      - name: Prepare Buildchain
+        run: |
+          chmod +x *.sh
+          ./setup_buildchain.sh --runner --disableSuki --disableSuSFS
+
+      - name: Build Kernel
+        run: |
+          ./build_kernel.sh --disable-samsung-protection --disable-suki
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          cp boot.img artifacts/ || true
+          cp boot.img.tar artifacts/ || true
+          cp out/arch/arm64/boot/Image artifacts/ || true
+          cp public.asc artifacts/gpg_public_key.asc || true
+
+      - name: Signing artifacts
+        env:
+            GPG_SIGN_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+        run: |
+          if [ -n "$GPG_SIGN_KEY" ]; then
+            gpg --batch --yes --output artifacts/boot.img.sig --detach-sig artifacts/boot.img
+            gpg --batch --yes --output artifacts/boot.img.tar.sig --detach-sig artifacts/boot.img.tar
+            gpg --batch --yes --output artifacts/Image.sig --detach-sig artifacts/Image
+          else
+            echo "No GPG key provided, skipping signing"
+          fi
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot_images
+          path: artifacts/*
+
+      - name: Cleanup Runner
+        run: |
+          ./build_kernel.sh clean
+          ./setup_buildchain.sh --cleanup
+  release:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: self-hosted
+    needs: [build]
+    steps:
+      - name: Bump version and push tag
+        id: tag
+        env:
+            E1S_RUNNER_TOKEN: ${{ secrets.E1S_RUNNER_TOKEN }}
+            USERNAME: ${{ github.repository_owner }}
+            REPO: ${{ github.repository }}
+        run: |
+          git remote set-url origin https://$USERNAME:$E1S_RUNNER_TOKEN@github.com/$REPO.git
+          TAG=$(./setup_buildchain.sh --getKernelVer)
+          SAMPATCHLEVEL=$(./setup_buildchain.sh --getSamsungPatchLevel)
+          echo "$TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "sampatchlevel=$SAMPATCHLEVEL" >> $GITHUB_OUTPUT
+          git tag -a $TAG -m "$TAG $SAMPATCHLEVEL stock kernel" ${GITHUB_SHA}
+          git push origin $TAG
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Stock Kernel ${{ steps.tag.outputs.tag }} ${{ steps.tag.outputs.sampatchlevel }}"
+          files: artifacts/*
+          tag_name: ${{ steps.tag.outputs.tag }}
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Cleanup artifacts
+        run: |
+          rm -rf artifacts

@@ -16,7 +16,7 @@ KERNEL_DIR="${KERNELBUILD}/common"
 OUTPUT_DIR="${CURRENT_DIR}/out"
 
 DISABLE_SAMSUNG_PROTECTION=true
-ENABLE_KERNELSU=true
+ENABLE_SUKI=true
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
@@ -43,8 +43,8 @@ while [[ $# -gt 0 ]]; do
             DISABLE_SAMSUNG_PROTECTION=true
             shift
             ;;
-        --enable-kernelsu)
-            ENABLE_KERNELSU=true
+        --disable-suki)
+            ENABLE_SUKI=false
             shift
             ;;
 		menuconfig)
@@ -77,13 +77,15 @@ done
 
 if [ "$PRINTHELP" = true ]; then
 	echo "build_kernel.sh [COMMAND/OPTIONS]"
+	echo "COMMANDS:"
+	printf "\tmenuconfig (opens menuconfig)\n"
+	printf "\tconfig (Builds the .config)\n"
+	printf "\tclean (cleans the out dir)\n"
 	echo "OPTIONS:"
-	echo "	--disable-samsung-protection (DEFAULT)"
-	echo "	--enable-kernelsu (Enables KernelSU/SukiSU Ultra in config. Follow KernelSU building guide)"
-	echo "	--help (Prints this message)"
-	echo "	menuconfig (opens menuconfig)"
-	echo "  config (Builds the .config)"
-	echo "  clean (cleans the out dir)"
+	printf "\t--disable-samsung-protection (DEFAULT DISABLED)\n"
+	printf "\t--disable-suki (Disables SukiSU Ultra in config. Follow SukiSU Ultra building guide)\n"
+	printf "\t--help (Prints this message)\n"
+	printf "\t--version [str] (Sets kernelversion to [str]. It overrides \"6.1.138$VERSION\")\n"
 	exit 0
 fi
 
@@ -152,10 +154,10 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
   exit 1
 fi
 
-if [ "$ENABLE_KERNELSU" = true ]; then
+if [ "$ENABLE_SUKI" = true ]; then
 	if [ ! -d $KERNEL_DIR/KernelSU ]; then
 		echo "[❗] Can't enable KernelSU in config. KernelSU doesn't exist."
-		ENABLE_KERNELSU=false
+		ENABLE_SUKI=false
 	else
 		DISABLE_SAMSUNG_PROTECTION=true
 		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \

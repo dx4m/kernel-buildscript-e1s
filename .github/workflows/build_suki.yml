@@ -1,4 +1,4 @@
-name: Run Build Script
+name: Build with SukiSU SuSFS
 
 permissions:
   contents: write
@@ -80,15 +80,19 @@ jobs:
           git remote set-url origin https://$USERNAME:$E1S_RUNNER_TOKEN@github.com/$REPO.git
           TAG=$(./setup_buildchain.sh --getTagVer)
           SUKIVER=$(./setup_buildchain.sh --getSukiVer)
+          KERNELVER=$(./setup_buildchain.sh --getKernelVer)
+          SAMPATCHLEVEL=$(./setup_buildchain.sh --getSamsungPatchLevel)
           echo "$TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "sukiversion=$SUKIVER" >> $GITHUB_OUTPUT
-          git tag -a $TAG -m "Kernel SuSFS patched with builtin SukiSU Ultra $SUKIVER" ${GITHUB_SHA}
+          echo "kernelversion=$KERNELVER" >> $GITHUB_OUTPUT
+          echo "sampatchlevel=$SAMPATCHLEVEL" >> $GITHUB_OUTPUT
+          git tag -a $TAG -m "$KERNELVER Kernel $SAMPATCHLEVEL SuSFS patched with builtin SukiSU Ultra $SUKIVER" ${GITHUB_SHA}
           git push origin $TAG
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "dx4m Kernel SuSFS patched with builtin SukiSU Ultra ${{ steps.tag.outputs.sukiversion }}"
+          name: "${{ steps.tag.outputs.kernelversion }} Kernel ${{ steps.tag.outputs.sampatchlevel }} SuSFS patched with builtin SukiSU Ultra ${{ steps.tag.outputs.sukiversion }}"
           files: artifacts/*
           tag_name: ${{ steps.tag.outputs.tag }}
         env:

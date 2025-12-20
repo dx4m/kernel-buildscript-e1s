@@ -28,6 +28,7 @@ ENABLESUKI=true
 ENABLEKSU=false
 CLEAN_KERNEL=false
 SAMSUNG_PATCH_LEVEL=false
+HYMOFS_PATCH=false
 
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
@@ -124,6 +125,23 @@ function getSuSFS(){
         echo "[✅] Done."
 }
 
+function getHymoFS(){
+	echo "[💠] Getting HymoFS"
+	
+	cd $KERNEL_DIR
+	if [ "$DISABLESUSFS" = true ]; then
+		curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android14_6.1/patch/hymofs.patch > hymofs.patch
+	else
+		curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android14_6.1/patch/hymofs_with_susfs.patch > hymofs.patch
+	fi
+	echo "[💠] Patching Kernel for HymoFS"
+	patch -p1 --fuzz=3 < hymofs.patch
+	
+	cd $CURRENT_DIR
+    echo "[✅] Done."
+	
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --runner)
@@ -174,6 +192,14 @@ while [[ $# -gt 0 ]]; do
 		--enableKSU)
             ENABLEKSU=true
 			ENABLESUKI=false
+            shift
+            ;;
+		--disableHymoFS)
+            HYMOFS_PATCH=false
+            shift
+            ;;
+		--enableHymoFS)
+            HYMOFS_PATCH=true
             shift
             ;;
 		--cleanKernel)
@@ -269,6 +295,10 @@ if [ "$ENABLE_RUNNER" = true ]; then
 		getSuSFS
 	fi
 	
+	if [ "$HYMOFS_PATCH" = true ]; then
+		getHymoFS
+	fi
+	
 	if [ ! -d $PREBUILTS ]; then
 		if [ ! -d $BUILDCHAIN ]; then
 			getAOSPBuildtools
@@ -290,6 +320,10 @@ else
 	
 		if [ "$DISABLESUSFS" = false ]; then
 			getSuSFS
+		fi
+		
+		if [ "$HYMOFS_PATCH" = true ]; then
+			getHymoFS
 		fi
 	fi
 

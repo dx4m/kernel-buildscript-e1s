@@ -29,11 +29,11 @@ jobs:
       - name: Prepare Buildchain
         run: |
           chmod +x *.sh
-          ./setup_buildchain.sh --runner --cleanKernel --enableKSU
+          ./setup_buildchain.sh --runner --cleanKernel --enableKSU  --enableSuSFS --enableHymoFS
 
       - name: Build Kernel
         run: |
-          ./build_kernel.sh --enable-ksu --enableSuSFS
+          ./build_kernel.sh --enable-ksu
 
       - name: Prepare artifacts
         run: |
@@ -87,12 +87,12 @@ jobs:
           echo "ksuversion=$KSUVER" >> $GITHUB_OUTPUT
           echo "kernelversion=$KERNELVER" >> $GITHUB_OUTPUT
           echo "sampatchlevel=$SAMPATCHLEVEL" >> $GITHUB_OUTPUT
-          git tag -a $TAG -m "$KERNELVER Kernel $SAMPATCHLEVEL SuSFS patched with builtin KernelSU $KSUVER" ${GITHUB_SHA}
+          git tag -a $TAG -m "$KERNELVER Kernel $SAMPATCHLEVEL SuSFS+HymoFS patched with builtin KernelSU $KSUVER" ${GITHUB_SHA}
           git push origin $TAG
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ steps.tag.outputs.kernelversion }} Kernel-${{ steps.tag.outputs.sampatchlevel }} SuSFS patched with builtin KernelSU ${{ steps.tag.outputs.ksuversion }}"
+          name: "${{ steps.tag.outputs.kernelversion }} Kernel-${{ steps.tag.outputs.sampatchlevel }} SuSFS+HymoFS patched with builtin KernelSU ${{ steps.tag.outputs.ksuversion }}"
           files: artifacts/*
           tag_name: ${{ steps.tag.outputs.tag }}
         env:

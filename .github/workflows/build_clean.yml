@@ -29,7 +29,7 @@ jobs:
       - name: Prepare Buildchain
         run: |
           chmod +x *.sh
-          ./setup_buildchain.sh --runner --disableSuki --disableSuSFS
+          ./setup_buildchain.sh --runner --cleanKernel --disableSuki --disableSuSFS
 
       - name: Build Kernel
         run: |

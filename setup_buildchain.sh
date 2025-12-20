@@ -20,11 +20,12 @@ CURRENT_DIR="$(pwd)"
 #Runner variable
 ENABLE_RUNNER=false
 CLEANUP_RUNNER=false
-GETSUKIVERSION=false
+GETKSUVERSION=false
 GETTAGVERSION=false
 GETKERNELVERSION=false
 DISABLESUSFS=false
-DISABLESUKI=false
+ENABLESUKI=true
+ENABLEKSU=false
 CLEAN_KERNEL=false
 SAMSUNG_PATCH_LEVEL=false
 
@@ -88,17 +89,37 @@ function getSukiSU() {
         echo "[✅] Done."
 }
 
+function getKernelSU() {
+        echo "[💠] Getting KernelSU"
+        cd $KERNEL_DIR
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+        cd $CURRENT_DIR
+        echo "[✅] Done."
+}
+
 function getSuSFS(){
 	echo "[💠] Getting SuSFS"
 	cd $KERNEL_DIR/../
         git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
         cd $CURRENT_DIR
         cp $KERNEL_DIR/../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch $KERNEL_DIR/
+		if [ "$ENABLEKSU" = true ]; then
+			cp $KERNEL_DIR/../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch $KERNEL_DIR/KernelSU/
+		fi
         cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/fs/* $KERNEL_DIR/fs/
         cp -r $KERNEL_DIR/../susfs4ksu/kernel_patches/include/linux/* $KERNEL_DIR/include/linux/
 
         cd $KERNEL_DIR
+		echo "[💠] Patching Kernel"
         patch -p1 --fuzz=3 < 50_add_susfs_in_gki-android14-6.1.patch
+		
+		if [ "$ENABLEKSU" = true ]; then
+			grep -q '<linux/stat.h>' include/linux/susfs.h || sed -i '/#include <linux\/susfs_def.h>/a #include <linux/stat.h>' include/linux/susfs.h
+			cd KernelSU/
+			echo "[💠] Patching KernelSU"
+			patch -p1 --fuzz=3 < 10_enable_susfs_for_ksu.patch
+		fi
+		
         cd $CURRENT_DIR
         echo "[✅] Done."
 }
@@ -113,8 +134,8 @@ while [[ $# -gt 0 ]]; do
             CLEANUP_RUNNER=true
             shift
             ;;
-		--getSukiVer)
-            GETSUKIVERSION=true
+		--getKSUVer)
+            GETKSUVERSION=true
             shift
             ;;
 		--getTagVer)
@@ -133,8 +154,26 @@ while [[ $# -gt 0 ]]; do
             DISABLESUSFS=true
             shift
             ;;
+		--enableSuSFS)
+            DISABLESUSFS=false
+            shift
+            ;;
 		--disableSuki)
-            DISABLESUKI=true
+            ENABLESUKI=false
+            shift
+            ;;
+		--enableSuki)
+            ENABLESUKI=true
+			ENABLEKSU=false
+            shift
+            ;;
+		--disableKSU)
+			ENABLEKSU=false
+            shift
+            ;;
+		--enableKSU)
+            ENABLEKSU=true
+			ENABLESUKI=false
             shift
             ;;
 		--cleanKernel)
@@ -181,7 +220,7 @@ if [ "$GETTAGVERSION" = true ]; then
 	exit 0
 fi
 
-if [ "$GETSUKIVERSION" = true ]; then
+if [ "$GETKSUVERSION" = true ]; then
 	if [ ! -d $KERNEL_DIR/KernelSU ]; then
 		exit 1
 	fi
@@ -218,8 +257,12 @@ if [ "$ENABLE_RUNNER" = true ]; then
 	
 	getSamsungKernel
 	
-	if [ "$DISABLESUKI" = false ]; then
+	if [ "$ENABLESUKI" = true ]; then
 		getSukiSU
+	fi
+	
+	if [ "$ENABLEKSU" = true ]; then
+		getKernelSU
 	fi
 	
 	if [ "$DISABLESUSFS" = false]; then
@@ -237,8 +280,12 @@ if [ "$ENABLE_RUNNER" = true ]; then
 else
 	if [ ! -d $KERNELBUILD/common ]; then
 		getSamsungKernel
-		if [ "$DISABLESUKI" = false ]; then
+		if [ "$ENABLESUKI" = true ]; then
 			getSukiSU
+		fi
+		
+		if [ "$ENABLEKSU" = true ]; then
+			getKernelSU
 		fi
 	
 		if [ "$DISABLESUSFS" = false ]; then

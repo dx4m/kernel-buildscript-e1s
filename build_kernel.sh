@@ -17,6 +17,7 @@ OUTPUT_DIR="${CURRENT_DIR}/out"
 
 DISABLE_SAMSUNG_PROTECTION=true
 ENABLE_SUKI=true
+ENABLE_KSU=false
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
@@ -45,6 +46,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --disable-suki)
             ENABLE_SUKI=false
+            shift
+            ;;
+		--enable-suki)
+            ENABLE_SUKI=true
+            shift
+            ;;
+		--enable-ksu)
+            ENABLE_KSU=true
             shift
             ;;
 		menuconfig)
@@ -163,6 +172,22 @@ if [ "$ENABLE_SUKI" = true ]; then
 		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
 			-e CONFIG_KSU -e CONFIG_KPM -e CONFIG_KSU_MANUAL_SU \
 			-e CONFIG_KSU_NONE_HOOK \
+			-e CONFIG_KSU_SUSFS -e CONFIG_KSU_SUSFS_SUS_PATH -e CONFIG_KSU_SUSFS_SUS_MOUNT \
+			-e CONFIG_KSU_SUSFS_SUS_KSTAT -e CONFIG_KSU_SUSFS_SPOOF_UNAME \
+			-e CONFIG_KSU_SUSFS_ENABLE_LOG -e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
+			-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG -e CONFIG_KSU_SUSFS_OPEN_REDIRECT \
+			-e CONFIG_KSU_SUSFS_SUS_MAP
+	fi
+fi
+
+if [ "$ENABLE_KSU" = true ]; then
+	if [ ! -d $KERNEL_DIR/KernelSU ]; then
+		echo "[❗] Can't enable KernelSU in config. KernelSU doesn't exist."
+		ENABLE_KSU=false
+	else
+		DISABLE_SAMSUNG_PROTECTION=true
+		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
+			-e CONFIG_KSU -e CONFIG_KSU_KPROBES_HOOK \
 			-e CONFIG_KSU_SUSFS -e CONFIG_KSU_SUSFS_SUS_PATH -e CONFIG_KSU_SUSFS_SUS_MOUNT \
 			-e CONFIG_KSU_SUSFS_SUS_KSTAT -e CONFIG_KSU_SUSFS_SPOOF_UNAME \
 			-e CONFIG_KSU_SUSFS_ENABLE_LOG -e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \

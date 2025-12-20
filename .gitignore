@@ -2,3 +2,4 @@ out/
 kernelbuild
 boot.img
 boot.img.tar
+.repo/

@@ -265,7 +265,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 		getKernelSU
 	fi
 	
-	if [ "$DISABLESUSFS" = false]; then
+	if [ "$DISABLESUSFS" = false ]; then
 		getSuSFS
 	fi
 	

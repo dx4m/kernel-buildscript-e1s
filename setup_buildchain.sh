@@ -42,7 +42,7 @@ function getAOSPBuildtools() {
 function getSamsungKernel() {
 	echo "[💠] Getting Samsung kernel for S24 (Exynos) from github"
 	cd $KERNELBUILD
-	git clone http://github.com/dx4m/android-kernel-samsung-e1s.git -b main common
+	git clone https://github.com/dx4m/android-kernel-samsung-e1s.git -b main common
 	cd ..
 	echo "[✅] Done."
 }

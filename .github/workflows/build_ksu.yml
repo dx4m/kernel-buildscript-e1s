@@ -73,11 +73,11 @@ jobs:
       - name: Bump version and push tag
         id: tag
         env:
-            E1S_RUNNER_TOKEN: ${{ secrets.E1S_RUNNER_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             USERNAME: ${{ github.repository_owner }}
             REPO: ${{ github.repository }}
         run: |
-          git remote set-url origin https://$USERNAME:$E1S_RUNNER_TOKEN@github.com/$REPO.git
+          git remote set-url origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
           TAG=$(./setup_buildchain.sh --getTagVer)
           KSUVER=$(./setup_buildchain.sh --getKSUVer)
           KERNELVER=$(./setup_buildchain.sh --getKernelVer)

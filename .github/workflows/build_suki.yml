@@ -1,4 +1,4 @@
-name: Build with SukiSU SuSFS
+name: Build with SukiSU SuSFS+HymoFS
 
 permissions:
   contents: write
@@ -78,7 +78,7 @@ jobs:
             REPO: ${{ github.repository }}
         run: |
           git remote set-url origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
-          TAG=$(./setup_buildchain.sh --getTagVer)
+          TAG=$(./setup_buildchain.sh --getKernelVer)-$(./setup_buildchain.sh --getSamsungPatchLevel)-$(./setup_buildchain.sh --getTagVer)
           KSUVER=$(./setup_buildchain.sh --getKSUVer)
           KERNELVER=$(./setup_buildchain.sh --getKernelVer)
           SAMPATCHLEVEL=$(./setup_buildchain.sh --getSamsungPatchLevel)

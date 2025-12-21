@@ -78,12 +78,12 @@ jobs:
             REPO: ${{ github.repository }}
         run: |
           git remote set-url origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
-          TAG=$(./setup_buildchain.sh --getKernelVer)
+          TAG=$(./setup_buildchain.sh --getKernelVer)-$(./setup_buildchain.sh --getSamsungPatchLevel)
           SAMPATCHLEVEL=$(./setup_buildchain.sh --getSamsungPatchLevel)
           echo "$TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "sampatchlevel=$SAMPATCHLEVEL" >> $GITHUB_OUTPUT
-          git tag -a $TAG -m "$TAG $SAMPATCHLEVEL stock kernel" ${GITHUB_SHA}
+          git tag -a $TAG -m "$TAG stock kernel" ${GITHUB_SHA}
           git push origin $TAG
       - name: Release
         uses: softprops/action-gh-release@v2

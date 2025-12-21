@@ -101,7 +101,7 @@ function getKernelSU() {
 function getSuSFS(){
 	echo "[💠] Getting SuSFS"
 	cd $KERNEL_DIR/../
-        git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
+        git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1 susfs4ksu
         cd $CURRENT_DIR
         cp $KERNEL_DIR/../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch $KERNEL_DIR/
 		if [ "$ENABLEKSU" = true ]; then

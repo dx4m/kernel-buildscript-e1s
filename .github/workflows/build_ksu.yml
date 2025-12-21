@@ -1,4 +1,4 @@
-name: Build with KernelSU SuSFS+HymoFS
+name: Build with KernelSU SuSFS + HymoFS
 
 permissions:
   contents: write

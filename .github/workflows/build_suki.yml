@@ -1,4 +1,4 @@
-name: Build with SukiSU SuSFS+HymoFS
+name: Build with SukiSU SuSFS + HymoFS
 
 permissions:
   contents: write

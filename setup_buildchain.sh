@@ -17,6 +17,8 @@ BUILD="${KERNELBUILD}/build"
 KERNEL_DIR="${KERNELBUILD}/common"
 CURRENT_DIR="$(pwd)"
 
+KERNELSU_BRANCH="main"
+
 #Runner variable
 ENABLE_RUNNER=false
 CLEANUP_RUNNER=false
@@ -42,7 +44,7 @@ function getAOSPBuildtools() {
 function getSamsungKernel() {
 	echo "[💠] Getting Samsung kernel for S24 (Exynos) from github"
 	cd $KERNELBUILD
-	git clone https://github.com/dx4m/android-kernel-samsung-e1s.git -b main common
+	git clone https://github.com/dx4m/android-kernel-samsung-e1s.git -b $1 common
 	cd ..
 	echo "[✅] Done."
 }
@@ -206,6 +208,11 @@ while [[ $# -gt 0 ]]; do
             CLEAN_KERNEL=true
             shift
             ;;
+		-b)
+			shift
+            KERNELSU_BRANCH="$1"
+            shift
+            ;;
         *)
             OTHER_ARGS+=("$1")
             shift
@@ -281,7 +288,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 		rm -rf $KERNELBUILD/susfs4ksu
 	fi
 	
-	getSamsungKernel
+	getSamsungKernel $KERNELSU_BRANCH
 	
 	if [ "$ENABLESUKI" = true ]; then
 		getSukiSU
@@ -309,7 +316,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 	
 else
 	if [ ! -d $KERNELBUILD/common ]; then
-		getSamsungKernel
+		getSamsungKernel $KERNELSU_BRANCH
 		if [ "$ENABLESUKI" = true ]; then
 			getSukiSU
 		fi

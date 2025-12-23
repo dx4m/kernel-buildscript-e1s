@@ -10,16 +10,17 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 function install_package() {
-    local pkg="$1"
-    if ! dpkg -l | grep -q "^ii  $pkg "; then
-        echo "Installing $pkg..."
-        if ! apt-get install -y "$pkg"; then
-            echo -e "[❌] ${RED}Installation failed: $pkg${NC}" >&2
-            exit 1
-		else
-			echo -e "[✅] ${GREEN}Install success: $pkg${NC}";
-        fi
-    fi
+    for pkg in "$@"; do
+		if ! dpkg -l | grep -q "^ii  $pkg "; then
+			echo "Installing $pkg..."
+			if ! apt-get install -y "$pkg"; then
+				echo -e "[❌] ${RED}Installation failed: $pkg${NC}" >&2
+				exit 1
+			else
+				echo -e "[✅] ${GREEN}Install success: $pkg${NC}";
+			fi
+		fi
+	done
 }
 
 if [ "$(id -u)" -ne 0 ]; then

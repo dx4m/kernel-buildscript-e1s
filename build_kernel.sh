@@ -18,6 +18,7 @@ OUTPUT_DIR="${CURRENT_DIR}/out"
 DISABLE_SAMSUNG_PROTECTION=true
 ENABLE_SUKI=true
 ENABLE_KSU=false
+ENABLE_HYMOFS=false
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
@@ -56,6 +57,10 @@ while [[ $# -gt 0 ]]; do
             ENABLE_KSU=true
             shift
             ;;
+		--enable-hymofs)
+			ENABLE_HYMOFS=true
+			shift
+			;;
 		menuconfig)
             MENUCONFIG=true
             shift
@@ -176,7 +181,7 @@ if [ "$ENABLE_SUKI" = true ]; then
 			-e CONFIG_KSU_SUSFS_SUS_KSTAT -e CONFIG_KSU_SUSFS_SPOOF_UNAME \
 			-e CONFIG_KSU_SUSFS_ENABLE_LOG -e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
 			-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG -e CONFIG_KSU_SUSFS_OPEN_REDIRECT \
-			-e CONFIG_KSU_SUSFS_SUS_MAP -e CONFIG_HYMOFS
+			-e CONFIG_KSU_SUSFS_SUS_MAP
 	fi
 fi
 
@@ -192,10 +197,16 @@ if [ "$ENABLE_KSU" = true ]; then
 			-e CONFIG_KSU_SUSFS_SUS_KSTAT -e CONFIG_KSU_SUSFS_SPOOF_UNAME \
 			-e CONFIG_KSU_SUSFS_ENABLE_LOG -e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
 			-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG -e CONFIG_KSU_SUSFS_OPEN_REDIRECT \
-			-e CONFIG_KSU_SUSFS_SUS_MAP -e CONFIG_HYMOFS
+			-e CONFIG_KSU_SUSFS_SUS_MAP
 	fi
 fi
 
+if [ "$ENABLE_HYMOFS" = true ]; then
+	DISABLE_SAMSUNG_PROTECTION=true
+	"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
+	-e CONFIG_HYMOFS
+fi
+	
 # Disable Samsung Protection
 if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
 	

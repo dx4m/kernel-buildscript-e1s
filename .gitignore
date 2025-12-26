@@ -3,3 +3,4 @@ kernelbuild
 boot.img
 boot.img.tar
 .repo/
+*:Zone.Identifier

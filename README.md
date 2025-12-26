@@ -1,7 +1,7 @@
 # Kernel Build Script for the Samsung Galaxy S24 (Exynos) - SM-921B
 
-[![Build with SukiSU SuSFS](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_suki.yml/badge.svg)](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_suki.yml)
-[![Build with KernelSU SuSFS](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_ksu.yml/badge.svg)](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_ksu.yml)
+[![Build with SukiSU SuSFS](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_suki_sus_hymo.yml/badge.svg)](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_suki_sus_hymo.yml)
+[![Build with KernelSU SuSFS](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_ksu_sus_hymo.yml/badge.svg)](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_ksu_sus_hymo.yml)
 [![Build clean Kernel](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_clean.yml/badge.svg)](https://github.com/dx4m/kernel-buildscript-e1s/actions/workflows/build_clean.yml)
 [![Issues](https://img.shields.io/github/issues/dx4m/kernel-buildscript-e1s?color=%230055AA)](https://github.com/dx4m/kernel-buildscript-e1s/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/dx4m/kernel-buildscript-e1s?color=%230055AA)](https://github.com/dx4m/kernel-buildscript-e1s/pulls)

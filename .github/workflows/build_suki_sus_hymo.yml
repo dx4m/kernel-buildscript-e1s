@@ -1,0 +1,59 @@
+name: Build with SukiSU Ultra SuSFS + HymoFS
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable_build.yml
+    with:
+      enable_hymofs: true
+      enable_susfs: true
+      enable_ksu: false
+      enable_suki: true
+    secrets:
+      GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      
+  release:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: self-hosted
+    needs: [build]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        
+      - name: Download Artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: boot_images-${{ github.sha }}
+          path: artifacts/
+        
+      - name: Create Git Tag
+        uses: ./.github/actions/create_tag
+        id: tag
+        with:
+          kernel_ver: ${{ needs.build.outputs.kernel_ver }}
+          samsung_patchlevel: ${{ needs.build.outputs.samsung_patchlevel }}
+          tag_ver: ${{ needs.build.outputs.tag_ver }}
+          ksu_ver: ${{ needs.build.outputs.ksu_ver }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          enable_hymofs: ${{ needs.build.outputs.enable_hymofs }}
+          enable_susfs: ${{ needs.build.outputs.enable_susfs }}
+          enable_ksu: ${{ needs.build.outputs.enable_ksu }}
+          enable_suki: ${{ needs.build.outputs.enable_suki }}
+
+      - name: Create GitHub Release
+        uses: ./.github/actions/create_release
+        with:
+          tag_name: ${{ steps.tag.outputs.git_tag }}
+          release_name: |
+            ${{ needs.build.outputs.kernel_ver }} Kernel-${{ needs.build.outputs.samsung_patchlevel }} SukiSU with SuSFS+HymoFS ${{ needs.build.outputs.ksu_ver }}
+          files: "artifacts/*"
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Cleanup artifacts
+        run: |
+          rm -rf artifacts

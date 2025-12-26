@@ -1,0 +1,21 @@
+name: 'Sign Artifacts'
+description: 'Signs artifacts with GPG'
+inputs:
+  gpg_key:
+    description: 'GPG signing key'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Import GPG Key
+      if: inputs.gpg_key != ''
+      run: echo -n "${{ inputs.gpg_key }}" | gpg --import
+      shell: bash
+
+    - name: Sign Files
+      if: inputs.gpg_key != ''
+      run: |
+        gpg --batch --yes --output artifacts/boot.img.sig --detach-sig artifacts/boot.img
+        gpg --batch --yes --output artifacts/boot.img.tar.sig --detach-sig artifacts/boot.img.tar
+        gpg --batch --yes --output artifacts/Image.sig --detach-sig artifacts/Image
+      shell: bash

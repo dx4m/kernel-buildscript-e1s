@@ -1,0 +1,87 @@
+name: Reusable Kernel Build
+
+on:
+  workflow_call:
+    inputs:
+      enable_hymofs:
+        type: boolean
+        default: false
+      enable_susfs:
+        type: boolean
+        default: false
+      enable_ksu:
+        type: boolean
+        default: false
+      enable_suki:
+        type: boolean
+        default: false
+    outputs:
+        kernel_ver:
+          description: "Kernel version"
+          value: ${{ jobs.build.outputs.kernel_ver }}
+        samsung_patchlevel:
+          description: "Samsung Patchlevel"
+          value: ${{ jobs.build.outputs.samsung_patchlevel }}
+        tag_ver:
+          description: "Tag version"
+          value: ${{ jobs.build.outputs.tag_ver }}
+        ksu_ver:
+          description: "KernelSU-Version"
+          value: ${{ jobs.build.outputs.ksu_ver }}
+        enable_hymofs:
+          description: "Enable HymoFS"
+          value: ${{ inputs.enable_hymofs }}
+        enable_susfs:
+          description: "Enable SuSFS"
+          value: ${{ inputs.enable_susfs }}
+        enable_ksu:
+          description: "Enable KernelSU"
+          value: ${{ inputs.enable_ksu }}
+        enable_suki:
+          description: "Enable SukiSU Ultra"
+          value: ${{ inputs.enable_suki }}
+    secrets:
+      GPG_SIGNING_KEY:
+        required: false
+
+jobs:
+  build:
+    runs-on: self-hosted
+    outputs:
+      kernel_ver: ${{ steps.version.outputs.kernel_ver }}
+      samsung_patchlevel: ${{ steps.version.outputs.samsung_patchlevel }}
+      tag_ver: ${{ steps.version.outputs.tag_ver }}
+      ksu_ver: ${{ steps.version.outputs.ksu_ver }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Build Kernel
+        uses: ./.github/actions/build_kernel
+        with:
+          enable_ksu: ${{ inputs.enable_ksu }}
+          enable_suki: ${{ inputs.enable_suki }}
+          enable_susfs: ${{ inputs.enable_susfs }}
+          enable_hymofs: ${{ inputs.enable_hymofs }}
+          
+      - name: Get Version Info
+        id: version
+        run: |
+          echo "kernel_ver=$(./setup_buildchain.sh --getKernelVer)" >> $GITHUB_OUTPUT
+          echo "samsung_patchlevel=$(./setup_buildchain.sh --getSamsungPatchLevel)" >> $GITHUB_OUTPUT
+          echo "tag_ver=$(./setup_buildchain.sh --getTagVer)" >> $GITHUB_OUTPUT
+          echo "ksu_ver=$(./setup_buildchain.sh --getKSUVer)" >> $GITHUB_OUTPUT
+
+      - name: Prepare Artifacts
+        uses: ./.github/actions/prepare_artifacts
+
+      - name: Sign Artifacts
+        uses: ./.github/actions/sign_artifacts
+        with:
+          gpg_key: ${{ secrets.GPG_SIGNING_KEY }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: boot_images-${{ github.sha }}
+          path: artifacts/*

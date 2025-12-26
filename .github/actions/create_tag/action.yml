@@ -1,0 +1,106 @@
+name: 'Create Git Tag'
+description: 'Creates a Git tag with version info'
+inputs:
+  kernel_ver:
+    description: 'Kernel version (e.g., 6.1.128)'
+    required: true
+  samsung_patchlevel:
+    description: 'Samsung patch level (e.g., BWJ1)'
+    required: true
+  tag_ver:
+    description: 'Additional tag version'
+    required: true
+  ksu_ver:
+    description: 'KernelSU version (e.g., v3.0.0)'
+    required: true
+  gh_token:
+    description: 'Github Token'
+    required: true
+  enable_hymofs:
+    description: 'Enable HymoFS'
+    required: false
+    type: boolean
+    default: false
+  enable_susfs:
+    description: 'Enable SuSFS'
+    required: false
+    type: boolean
+    default: false
+  enable_ksu:
+    description: 'Enable KernelSU'
+    required: false
+    type: boolean
+    default: false
+  enable_suki:
+    description: 'Enable SukiSU'
+    required: false
+    type: boolean
+    default: false
+outputs:
+  git_tag:
+    description: 'Final Git Tag'
+    value: ${{ steps.tag.outputs.tag }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Git Remote URL
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh_token }}
+        USERNAME: ${{ github.repository_owner }}
+        REPO: ${{ github.repository }}
+      run: |
+        git remote set-url origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
+      shell: bash
+
+    - name: Generate Tag
+      id: tag
+      env:
+        EN_KSU: ${{ inputs.enable_ksu }}
+        EN_SUKI: ${{ inputs.enable_suki }}
+        EN_SUS: ${{ inputs.enable_susfs }}
+        EN_HYMO: ${{ inputs.enable_hymofs }}
+        SAM_PATCH: ${{ inputs.samsung_patchlevel }}
+        KERN_VER: ${{ inputs.kernel_ver }}
+        TAG_VER: ${{ inputs.tag_ver }}
+      run: |
+        BASE_TAG="$KERN_VER-$SAM_PATCH"
+        SUFFIX=""
+        if [ "$EN_KSU" = true ]; then
+            SUFFIX="${SUFFIX}-ksu"
+            BASE_TAG="$BASE_TAG-$TAG_VER"
+        fi
+        if [ "$EN_SUKI" = true ]; then
+            SUFFIX="${SUFFIX}-suki"
+            BASE_TAG="$BASE_TAG-$TAG_VER"
+        fi
+        if [ "$EN_SUS" = true ]; then
+            SUFFIX="${SUFFIX}-susfs"
+        fi
+        if [ "$EN_HYMO" = true ]; then
+            SUFFIX="${SUFFIX}-hymofs"
+        fi
+        
+        FINAL_TAG="${BASE_TAG}${SUFFIX}"
+        echo "tag=$FINAL_TAG" >> $GITHUB_OUTPUT
+        echo "Generated tag: $FINAL_TAG"
+      shell: bash
+
+    - name: Create and Push Tag
+      run: |
+        FEATURES=()
+        ${{ inputs.enable_susfs == 'true' && 'FEATURES+=("SuSFS")' || '' }}
+        ${{ inputs.enable_hymofs == 'true' && 'FEATURES+=("+HymoFS")' || '' }}
+        
+        KSU=()
+        ${{ inputs.enable_ksu == 'true' && 'KSU+=("KernelSU")' || '' }}
+        ${{ inputs.enable_suki == 'true' && 'KSU+=("SukiSU")' || '' }}
+        
+        MESSAGE="${{ inputs.kernel_ver }} Kernel-${{ inputs.samsung_patchlevel }}"
+        
+        [[ ${#KSU[@]} -gt 0 ]] && MESSAGE="$MESSAGE ${KSU[*]}"
+        [[ ${#FEATURES[@]} -gt 0 ]] && MESSAGE="$MESSAGE with ${FEATURES[*]}"
+        
+        git tag -a "${{ steps.tag.outputs.tag }}" -m "$MESSAGE" ${GITHUB_SHA}
+        git push origin ${{ steps.tag.outputs.tag }}
+      shell: bash

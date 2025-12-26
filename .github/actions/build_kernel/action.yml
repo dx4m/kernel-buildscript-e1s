@@ -1,0 +1,41 @@
+name: 'Build Kernel'
+description: 'Builds the kernel with optional KSU/SukiSU with SuSFS/HymoFS'
+inputs:
+    enable_ksu:
+        description: 'Enable KernelSU'
+        required: false
+        default: 'false'
+    enable_suki:
+        description: 'Enable SukiSU Ultra'
+        required: false
+        default: 'false'
+    enable_susfs:
+        description: 'Enable SuSFS'
+        required: false
+        default: 'false'
+    enable_hymofs:
+        description: 'Enable HymoFS'
+        required: false
+        default: 'false'
+        
+runs:
+    using: "composite"
+    steps:
+        - name: Prepare Buildchain
+          run: |
+            chmod +x *.sh
+            ./setup_buildchain.sh --runner --cleanKernel \
+                ${{ inputs.enable_ksu == 'true' && '--enableKSU' || '--disableKSU' }} \
+                ${{ inputs.enable_suki == 'true' && '--enableSuki' || '--disableSuki' }} \
+                ${{ inputs.enable_susfs == 'true' && '--enableSuSFS' || '--disableSuSFS' }} \
+                ${{ inputs.enable_hymofs == 'true' && '--enableHymoFS' || '--disableHymoFS' }}
+          shell: bash
+        
+        - name: Build Kernel
+          run: |
+            ./build_kernel.sh \
+                ${{ inputs.enable_ksu && '--enable-ksu' || '--disable-ksu' }} \
+                ${{ inputs.enable_suki && '--enable-suki' || '--disable-suki' }} \
+                ${{ inputs.enable_hymofs && '--enable-hymofs' || '' }} \
+                --disable-samsung-protection
+          shell: bash

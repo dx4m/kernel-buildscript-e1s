@@ -1,0 +1,27 @@
+name: 'Create GitHub Release'
+description: 'Creates a GitHub release with artifacts'
+inputs:
+  tag_name:
+    description: 'Tag name'
+    required: true
+  release_name:
+    description: 'Release name'
+    required: true
+  files:
+    description: 'Files to upload'
+    required: true
+  gh_token:
+    description: 'Github Token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ inputs.release_name }}
+        files: ${{ inputs.files }}
+        tag_name: ${{ inputs.tag_name }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh_token }}

@@ -1,0 +1,16 @@
+name: 'Prepare Artifacts'
+description: 'Copies build outputs to artifacts folder'
+runs:
+  using: "composite"
+  steps:
+    - name: Create Artifacts Directory
+      run: mkdir -p artifacts
+      shell: bash
+
+    - name: Copy Files
+      run: |
+        cp boot.img artifacts/ || true
+        cp boot.img.tar artifacts/ || true
+        cp out/arch/arm64/boot/Image artifacts/ || true
+        cp public.asc artifacts/gpg_public_key.asc || true
+      shell: bash

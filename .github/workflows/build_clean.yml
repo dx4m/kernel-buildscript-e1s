@@ -1,4 +1,4 @@
-name: Build clean Kernel
+name: Build with Stock Kernel
 
 permissions:
   contents: write
@@ -6,93 +6,54 @@ permissions:
 on:
   workflow_dispatch:
 
-
 jobs:
   build:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-        with:
-          clean: 'false'
-
-      - name: Initialize GPG Signing Key
-        env:
-          GPG_SIGN_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-        run: |
-          if [ -n "$GPG_SIGN_KEY" ]; then
-            echo -n "$GPG_SIGN_KEY" | gpg --import
-          else
-            echo "No GPG key provided, skipping signing"
-          fi
-
-      - name: Prepare Buildchain
-        run: |
-          chmod +x *.sh
-          ./setup_buildchain.sh --runner --cleanKernel --disableSuki --disableSuSFS
-
-      - name: Build Kernel
-        run: |
-          ./build_kernel.sh --disable-samsung-protection --disable-suki
-
-      - name: Prepare artifacts
-        run: |
-          mkdir -p artifacts
-          cp boot.img artifacts/ || true
-          cp boot.img.tar artifacts/ || true
-          cp out/arch/arm64/boot/Image artifacts/ || true
-          cp public.asc artifacts/gpg_public_key.asc || true
-
-      - name: Signing artifacts
-        env:
-            GPG_SIGN_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-        run: |
-          if [ -n "$GPG_SIGN_KEY" ]; then
-            gpg --batch --yes --output artifacts/boot.img.sig --detach-sig artifacts/boot.img
-            gpg --batch --yes --output artifacts/boot.img.tar.sig --detach-sig artifacts/boot.img.tar
-            gpg --batch --yes --output artifacts/Image.sig --detach-sig artifacts/Image
-          else
-            echo "No GPG key provided, skipping signing"
-          fi
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: boot_images
-          path: artifacts/*
-
-      - name: Cleanup Runner
-        run: |
-          ./build_kernel.sh clean
-          ./setup_buildchain.sh --cleanup
+    uses: ./.github/workflows/reusable_build.yml
+    with:
+      enable_hymofs: false
+      enable_susfs: false
+      enable_ksu: false
+      enable_suki: false
+    secrets:
+      GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      
   release:
     if: github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
     needs: [build]
     steps:
-      - name: Bump version and push tag
-        id: tag
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            USERNAME: ${{ github.repository_owner }}
-            REPO: ${{ github.repository }}
-        run: |
-          git remote set-url origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
-          TAG=$(./setup_buildchain.sh --getKernelVer)-$(./setup_buildchain.sh --getSamsungPatchLevel)
-          SAMPATCHLEVEL=$(./setup_buildchain.sh --getSamsungPatchLevel)
-          echo "$TAG"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "sampatchlevel=$SAMPATCHLEVEL" >> $GITHUB_OUTPUT
-          git tag -a $TAG -m "$TAG stock kernel" ${GITHUB_SHA}
-          git push origin $TAG
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        
+      - name: Download Artifacts
+        uses: actions/download-artifact@v7
         with:
-          name: "Stock Kernel ${{ steps.tag.outputs.tag }} ${{ steps.tag.outputs.sampatchlevel }}"
-          files: artifacts/*
-          tag_name: ${{ steps.tag.outputs.tag }}
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: boot_images-${{ github.sha }}
+          path: artifacts/
+        
+      - name: Create Git Tag
+        uses: ./.github/actions/create_tag
+        id: tag
+        with:
+          kernel_ver: ${{ needs.build.outputs.kernel_ver }}
+          samsung_patchlevel: ${{ needs.build.outputs.samsung_patchlevel }}
+          tag_ver: ${{ needs.build.outputs.tag_ver }}
+          ksu_ver: ${{ needs.build.outputs.ksu_ver }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          enable_hymofs: ${{ needs.build.outputs.enable_hymofs }}
+          enable_susfs: ${{ needs.build.outputs.enable_susfs }}
+          enable_ksu: ${{ needs.build.outputs.enable_ksu }}
+          enable_suki: ${{ needs.build.outputs.enable_suki }}
+
+      - name: Create GitHub Release
+        uses: ./.github/actions/create_release
+        with:
+          tag_name: ${{ steps.tag.outputs.git_tag }}
+          release_name: |
+            ${{ needs.build.outputs.kernel_ver }} Kernel-${{ needs.build.outputs.samsung_patchlevel }} Stock Kernel
+          files: "artifacts/*"
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Cleanup artifacts
         run: |
           rm -rf artifacts

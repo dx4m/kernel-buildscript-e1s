@@ -34,8 +34,9 @@ runs:
         - name: Build Kernel
           run: |
             ./build_kernel.sh \
-                ${{ inputs.enable_ksu && '--enable-ksu' || '--disable-ksu' }} \
-                ${{ inputs.enable_suki && '--enable-suki' || '--disable-suki' }} \
+                ${{ inputs.enable_ksu && '--enable-ksu' || '' }} \
+                ${{ inputs.enable_suki && '--enable-suki' || '' }} \
+                ${{ inputs.enable_susfs && '--enable-susfs' || '' }} \
                 ${{ inputs.enable_hymofs && '--enable-hymofs' || '' }} \
                 --disable-samsung-protection
           shell: bash

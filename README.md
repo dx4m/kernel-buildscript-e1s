@@ -76,7 +76,7 @@ This repository contains a simple build script and environment setup for compili
 
 4. Build the kernel:
    ```bash
-   ./build_kernel.sh
+   ./build_kernel.sh --enable-suki
    ```
 
   - To build with KernelSU instead of SukiSU Ultra:
@@ -87,6 +87,11 @@ This repository contains a simple build script and environment setup for compili
   - Build clean kernel:
 	```bash
 	./build_kernel.sh --disable-suki --disable-samsung-protection
+	```
+	
+  - Build with additional things like SuSFS or HymoFS:
+	```
+	./build_kernel.sh --enable-suki --enable-susfs --enable-hymofs
 	```
 
   - For help use:

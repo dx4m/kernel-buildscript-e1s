@@ -18,7 +18,7 @@ This repository contains a simple build script and environment setup for compili
 - Support for custom build arguments (e.g. `--enable-ksu`, `--enable-suki`, `--disable-suki`) - Use `--help` for more info
 - `--disable-samsung-protection` is enabled by default, otherwise your device won't boot.
 - Actions support
-- May also work on the S24+ (SM-926B) **!!!NOT TESTED!!!**
+- Also works on the [S24+ (SM-926B)](https://xdaforums.com/t/kernel-sukisu-ksu-susfs-hymofs-dx4m-kernel-for-s24-exynos-s921b.4756264/page-2#post-90422692)
 
 ## Requirements
 
@@ -30,7 +30,7 @@ This repository contains a simple build script and environment setup for compili
   ```
   or use
   ```bash
-  ./install_dep.sh
+  sudo ./install_dep.sh
   ```
 - Sufficient disk space (~100GB+ recommended)
 
@@ -99,6 +99,30 @@ This repository contains a simple build script and environment setup for compili
    out/arch/arm64/boot/
    ```
    and a flashable boot.img & boot.img.tar will be generated in the root of the repo.
+   
+## Github Actions
+
+You can fork this repository and spin up your own runner with this Docker composite.yml:
+```
+services:
+  actions_runner:
+    image: dx4m/kernel-buildscript-runner:latest
+    restart: unless-stopped
+    environment:
+      GITHUB_RUNNER_REPO_URL: https://github.com/example/kernel-buildscript-e1s
+      GITHUB_RUNNER_TOKEN: AKK........XYZ
+      GITHUB_USERNAME: example
+      GITHUB_EMAIL: example@example.com
+      GITHUB_RUNNER_VERSION: 2.330.0
+      GITHUB_RUNNER_NAME: example-runner-name
+    ports:
+      - 62991:22 #To have a way to ssh into it with username: build-user, pass: user
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+networks: {}
+```
+Make sure you populate the yaml file right. Then go to your repo -> Actions and spinn up a kernel build.
+When finished, you find your kernel on your repo -> Releases
 
 ## License
 
@@ -112,7 +136,9 @@ Special thanks to:
 
 ## Resources
 - [AOSP Kernel Sources](https://android.googlesource.com/kernel/manifest/)
-- [Samsung Kernel Source](https://github.com/dx4m/android-kernel-samsung-e1s)
+- [Samsung Kernel Source(Github)](https://github.com/dx4m/android-kernel-samsung-e1s) or [Samsung Kernel Source(OSRC)](https://opensource.samsung.com/uploadSearch?searchValue=sm-s921b)
 - [Kernel Buildscript](https://github.com/dx4m/kernel_buildscript_gts10fewifi) for the Galaxy Tab S10 FE where this bases on
 - [SukiSU Ultra Project](https://github.com/sukisu-ultra/sukisu-ultra)
+- [KernelSU Project](https://github.com/tiann/KernelSU)
 - [susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu)
+- [HymoFS](https://github.com/YuzakiKokuban/HymoFS)

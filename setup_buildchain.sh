@@ -19,6 +19,9 @@ CURRENT_DIR="$(pwd)"
 
 KERNELSU_BRANCH="main"
 
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
 #Runner variable
 ENABLE_RUNNER=false
 CLEANUP_RUNNER=false
@@ -31,6 +34,7 @@ ENABLEKSU=false
 CLEAN_KERNEL=false
 SAMSUNG_PATCH_LEVEL=false
 HYMOFS_PATCH=false
+DISABLE_LKM=false
 
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
@@ -96,7 +100,13 @@ function getKernelSU() {
         echo "[💠] Getting KernelSU"
         cd $KERNEL_DIR
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+		
+		if [ "$DISABLE_LKM" = false ]; then
+			sed -i 's/#ifdef MODULE/#ifndef MODULE/g' KernelSU/kernel/supercalls.c
+		fi
+		
         cd $CURRENT_DIR
+		
         echo "[✅] Done."
 }
 
@@ -196,6 +206,10 @@ while [[ $# -gt 0 ]]; do
 			ENABLESUKI=false
             shift
             ;;
+		--disableFakeLKM)
+			DISABLE_LKM=true;
+			shift
+			;;
 		--disableHymoFS)
             HYMOFS_PATCH=false
             shift
@@ -267,6 +281,12 @@ fi
 if [ "$CLEANUP_RUNNER" = true ]; then
 	rmPrebuilts
 	exit 0
+fi
+
+if [ "$DISABLE_LKM" = false ] && [ "$ENABLEKSU" = true ]; then
+	echo -e "${YELLOW}WARNING: Since KernelSU v3.0.0, GKI mode was deprecated. It works but you get a annoying warning in the manager, which you can't get rid of.${NC}"
+	echo -e "${YELLOW}So we suppress KSU to be LKM mode which is fake obviously.${NC}"
+	echo -e "${YELLOW}When you don't want this add the \"--disableFakeLKM\" flag to the setup_buildchain.sh${NC}"
 fi
 
 if [ "$CLEAN_KERNEL" = true ]; then

@@ -146,4 +146,4 @@ Special thanks to:
 - [SukiSU Ultra Project](https://github.com/sukisu-ultra/sukisu-ultra)
 - [KernelSU Project](https://github.com/tiann/KernelSU)
 - [susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu)
-- [HymoFS](https://github.com/YuzakiKokuban/HymoFS)
+- [HymoFS](https://github.com/Anatdx/HymoFS)

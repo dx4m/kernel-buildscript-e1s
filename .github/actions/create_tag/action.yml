@@ -36,6 +36,11 @@ inputs:
     required: false
     type: boolean
     default: false
+  enable_bbg:
+    description: 'Enable Baseband-Guard'
+    required: false
+    type: boolean
+    default: false
 outputs:
   git_tag:
     description: 'Final Git Tag'
@@ -60,6 +65,7 @@ runs:
         EN_SUKI: ${{ inputs.enable_suki }}
         EN_SUS: ${{ inputs.enable_susfs }}
         EN_HYMO: ${{ inputs.enable_hymofs }}
+        EN_BBG: ${{ inputs.enable_bbg }}
         SAM_PATCH: ${{ inputs.samsung_patchlevel }}
         KERN_VER: ${{ inputs.kernel_ver }}
         TAG_VER: ${{ inputs.tag_ver }}
@@ -80,6 +86,9 @@ runs:
         if [ "$EN_HYMO" = true ]; then
             SUFFIX="${SUFFIX}-hymofs"
         fi
+        if [ "$EN_BBG" = true ]; then
+            SUFFIX="${SUFFIX}-bbg"
+        fi
         
         FINAL_TAG="${BASE_TAG}${SUFFIX}"
         echo "tag=$FINAL_TAG" >> $GITHUB_OUTPUT
@@ -91,6 +100,7 @@ runs:
         FEATURES=()
         ${{ inputs.enable_susfs == 'true' && 'FEATURES+=("SuSFS")' || '' }}
         ${{ inputs.enable_hymofs == 'true' && 'FEATURES+=("+HymoFS")' || '' }}
+        ${{ inputs.enable_bbg == 'true' && 'FEATURES+=("+Baseband-Guard")' || '' }}
         
         KSU=()
         ${{ inputs.enable_ksu == 'true' && 'KSU+=("KernelSU")' || '' }}

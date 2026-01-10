@@ -14,6 +14,7 @@ jobs:
       enable_susfs: true
       enable_ksu: true
       enable_suki: false
+      enable_bbg: true
     secrets:
       GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
       
@@ -44,6 +45,7 @@ jobs:
           enable_susfs: ${{ needs.build.outputs.enable_susfs }}
           enable_ksu: ${{ needs.build.outputs.enable_ksu }}
           enable_suki: ${{ needs.build.outputs.enable_suki }}
+          enable_bbg: ${{ needs.build.outputs.enable_bbg }}
 
       - name: Create GitHub Release
         uses: ./.github/actions/create_release

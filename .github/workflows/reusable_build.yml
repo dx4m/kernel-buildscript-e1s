@@ -15,6 +15,9 @@ on:
       enable_suki:
         type: boolean
         default: false
+      enable_bbg:
+        type: boolean
+        default: false
     outputs:
         kernel_ver:
           description: "Kernel version"
@@ -40,6 +43,9 @@ on:
         enable_suki:
           description: "Enable SukiSU Ultra"
           value: ${{ inputs.enable_suki }}
+        enable_bbg:
+          description: "Enable Baseband-Guard"
+          value: ${{ inputs.enable_bbg }}
     secrets:
       GPG_SIGNING_KEY:
         required: false
@@ -63,6 +69,7 @@ jobs:
           enable_suki: ${{ inputs.enable_suki }}
           enable_susfs: ${{ inputs.enable_susfs }}
           enable_hymofs: ${{ inputs.enable_hymofs }}
+          enable_bbg: ${{ inputs.enable_bbg }}
           
       - name: Get Version Info
         id: version

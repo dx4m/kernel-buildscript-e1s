@@ -32,9 +32,11 @@ DISABLESUSFS=false
 ENABLESUKI=true
 ENABLEKSU=false
 CLEAN_KERNEL=false
+PRINTHELP=false
 SAMSUNG_PATCH_LEVEL=false
 HYMOFS_PATCH=false
 DISABLE_LKM=false
+ENABLE_BBG=false
 
 function getAOSPBuildtools() {
 	echo "[💠] Getting the buildchain"
@@ -154,6 +156,41 @@ function getHymoFS(){
 	
 }
 
+#Baseband-Guard to protect important partitions from malicious threats
+function getBBG(){
+	echo "[💠] Getting Baseband-Guard"
+	cd $KERNEL_DIR
+	
+	curl -LSs https://raw.githubusercontent.com/vc-teahouse/Baseband-guard/refs/heads/main/setup.sh | bash -s
+	
+	cd $CURRENT_DIR
+	echo "[✅] Done."
+
+}
+
+function getEverything(){
+	getSamsungKernel $KERNELSU_BRANCH
+	if [ "$ENABLESUKI" = true ]; then
+		getSukiSU
+	fi
+	
+	if [ "$ENABLEKSU" = true ]; then
+		getKernelSU
+	fi
+	
+	if [ "$DISABLESUSFS" = false ]; then
+		getSuSFS
+	fi
+	
+	if [ "$HYMOFS_PATCH" = true ]; then
+		getHymoFS
+	fi
+	
+	if [ "$ENABLE_BBG" = true ]; then
+		getBBG
+	fi
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --runner)
@@ -218,6 +255,10 @@ while [[ $# -gt 0 ]]; do
             HYMOFS_PATCH=true
             shift
             ;;
+		--enableBBG)
+            ENABLE_BBG=true
+            shift
+            ;;
 		--cleanKernel)
             CLEAN_KERNEL=true
             shift
@@ -227,12 +268,44 @@ while [[ $# -gt 0 ]]; do
             KERNELSU_BRANCH="$1"
             shift
             ;;
+		--help)
+            PRINTHELP=true
+            shift
+            ;;
         *)
             OTHER_ARGS+=("$1")
             shift
             ;;
     esac
 done
+
+if [ "$PRINTHELP" = true ]; then
+	echo "setup_buildchain.sh [OPTIONS]"
+	echo "OPTIONS:"
+	printf "\t--runner (Uses runner mode, which Github Actions uses)\n"
+	printf "\t--cleanup (Cleans from runner mode)\n"
+	printf "\t--getKSUVer (Gets KernelSU version -- Github Actions)\n"
+	printf "\t--getTagVer (Gets Tag version -- Github Actions)\n"
+	printf "\t--getKernelVer (Gets current Kernel version -- Github Actions)\n"
+	printf "\t--getSamsungPatchLevel (Gets current patchlevel -- Github Actions)\n"
+	printf "\t--disableSuSFS (Disables SuSFS from setup)\n"
+	printf "\t--enableSuSFS (Enables SuSFS from setup)\n"
+	printf "\t--disableSuki (Disables SukiSU Ultra from setup)\n"
+	printf "\t--enableSuki (Enables SukiSU Ultra from setup)\n"
+	printf "\t--disableKSU (Disables KernelSU from setup)\n"
+	printf "\t--enableKSU (Enables KernelSU from setup)\n"
+	printf "\t--disableHymoFS (Disables HymoFS from setup)\n"
+	printf "\t--enableHymoFS (Enables HymoFS from setup)\n"
+	printf "\t--disableFakeLKM (Disables fake LKM mode in KernelSU -- Since v3.0.0 GKI mode is deprecated)\n"
+	printf "\t--enableBBG (Enables Baseband-Guard -- Baseband-Guard protects from malicious threads. Default disabled)\n"
+	printf "\t--cleanKernel (Gets a clean Kernel from Github -- e.g. for resetup)\n"
+	printf "\t--help (Prints this message)\n"
+	printf "\t-b [val] (Select different branch of the Samsung Kernel - Default main)\n"
+	printf "\n\n"
+	printf "Default without any options gets SukiSU Ultra +SuSFS -HymoFS -BasebandGuard"
+	
+	exit 0
+fi
 
 if [ "$SAMSUNG_PATCH_LEVEL" = true ]; then
 	if [ ! -d $KERNEL_DIR ]; then
@@ -308,23 +381,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 		rm -rf $KERNELBUILD/susfs4ksu
 	fi
 	
-	getSamsungKernel $KERNELSU_BRANCH
-	
-	if [ "$ENABLESUKI" = true ]; then
-		getSukiSU
-	fi
-	
-	if [ "$ENABLEKSU" = true ]; then
-		getKernelSU
-	fi
-	
-	if [ "$DISABLESUSFS" = false ]; then
-		getSuSFS
-	fi
-	
-	if [ "$HYMOFS_PATCH" = true ]; then
-		getHymoFS
-	fi
+	getEverything
 	
 	if [ ! -d $PREBUILTS ]; then
 		if [ ! -d $BUILDCHAIN ]; then
@@ -336,22 +393,7 @@ if [ "$ENABLE_RUNNER" = true ]; then
 	
 else
 	if [ ! -d $KERNELBUILD/common ]; then
-		getSamsungKernel $KERNELSU_BRANCH
-		if [ "$ENABLESUKI" = true ]; then
-			getSukiSU
-		fi
-		
-		if [ "$ENABLEKSU" = true ]; then
-			getKernelSU
-		fi
-	
-		if [ "$DISABLESUSFS" = false ]; then
-			getSuSFS
-		fi
-		
-		if [ "$HYMOFS_PATCH" = true ]; then
-			getHymoFS
-		fi
+		getEverything
 	fi
 
 	if [ ! -d $PREBUILTS ]; then

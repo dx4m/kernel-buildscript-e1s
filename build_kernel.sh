@@ -20,6 +20,7 @@ ENABLE_SUKI=false
 ENABLE_KSU=false
 ENABLE_SUSFS=false
 ENABLE_HYMOFS=false
+ENABLE_BBG=false
 MENUCONFIG=false
 PRINTHELP=false
 CLEAN=false
@@ -62,6 +63,14 @@ while [[ $# -gt 0 ]]; do
 			ENABLE_HYMOFS=true
 			shift
 			;;
+		--disable-bbg)
+			ENABLE_BBG=false
+			shift
+			;;
+		--enable-bbg)
+			ENABLE_BBG=true
+			shift
+			;;
 		menuconfig)
             MENUCONFIG=true
             shift
@@ -93,12 +102,21 @@ done
 if [ "$PRINTHELP" = true ]; then
 	echo "build_kernel.sh [COMMAND/OPTIONS]"
 	echo "COMMANDS:"
-	printf "\tmenuconfig (opens menuconfig)\n"
+	printf "\tmenuconfig (opens menuconfig -- can configure it as you like without any options given)\n"
 	printf "\tconfig (Builds the .config)\n"
 	printf "\tclean (cleans the out dir)\n"
 	echo "OPTIONS:"
 	printf "\t--disable-samsung-protection (DEFAULT DISABLED)\n"
 	printf "\t--disable-suki (Disables SukiSU Ultra in config. Follow SukiSU Ultra building guide)\n"
+	printf "\t--enable-suki (Enables SukiSU Ultra in config. Follow SukiSU Ultra building guide)\n"
+	printf "\t--disable-ksu (Disables KernelSU in config. Follow KernelSU building guide)\n"
+	printf "\t--enable-ksu (Enables KernelSU in config. Follow KernelSU building guide)\n"
+	printf "\t--disable-susfs (Disables SuSFS in config.)\n"
+	printf "\t--enable-susfs (Enables SuSFS in config.)\n"
+	printf "\t--disable-hymofs (Disables HymoFS in config.)\n"
+	printf "\t--enable-susfs (Enables HymoFS in config.)\n"
+	printf "\t--disable-bbg (Disables Baseband-Guard in config.)\n"
+	printf "\t--enable-bbg (Enables Baseband-Guard in config.)\n"
 	printf "\t--help (Prints this message)\n"
 	printf "\t--version [str] (Sets kernelversion to [str]. It overrides \"6.1.138$VERSION\")\n"
 	exit 0
@@ -220,6 +238,27 @@ if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
 
 fi
 
+if [ "$ENABLE_BBG" = true ]; then
+	"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" -e BBG -d BBG_BLOCK_BOOT -d BBG_BLOCK_RECOVERY
+		
+	SECURITY_STATE=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" -s LSM)
+	
+	if [[ "$SECURITY_STATE" != *"baseband_guard"* ]]; then
+		SECURITY_STATE="$SECURITY_STATE,baseband_guard"
+		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --set-str LSM "$SECURITY_STATE"
+	fi
+	
+else
+	"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" -d BBG
+	
+	SECURITY_STATE=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" -s LSM)
+	
+	if [[ "$SECURITY_STATE" = *"baseband_guard"* ]]; then
+		SECURITY_STATE=$(echo "$SECURITY_STATE" | sed 's/,baseband_guard//g')
+		"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --set-str LSM "$SECURITY_STATE"
+	fi
+fi
+
 LOCALVERSION=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --state CONFIG_LOCALVERSION)
 
 if [ -z "$LOCALVERSION" ]; then
@@ -235,6 +274,7 @@ echo "LOCALVERSION: $LOCALVERSION"
 # Change LOCALVERSION
 "${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
   --set-str CONFIG_LOCALVERSION "$LOCALVERSION" -d CONFIG_LOCALVERSION_AUTO
+
 
 # Fix Kernel Version to remove + (The + stands for dirty kernel -- because we patch it and the changes are not in a commit)
 sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion

@@ -17,6 +17,10 @@ inputs:
         description: 'Enable HymoFS'
         required: false
         default: 'false'
+    enable_bbg:
+        description: 'Enable Baseband-Guard'
+        required: false
+        default: 'false'
         
 runs:
     using: "composite"
@@ -28,7 +32,8 @@ runs:
                 ${{ inputs.enable_ksu == 'true' && '--enableKSU' || '--disableKSU' }} \
                 ${{ inputs.enable_suki == 'true' && '--enableSuki' || '--disableSuki' }} \
                 ${{ inputs.enable_susfs == 'true' && '--enableSuSFS' || '--disableSuSFS' }} \
-                ${{ inputs.enable_hymofs == 'true' && '--enableHymoFS' || '--disableHymoFS' }}
+                ${{ inputs.enable_hymofs == 'true' && '--enableHymoFS' || '--disableHymoFS' }} \
+                ${{ inputs.enable_bbg == 'true' && '--enableBBG' || '--disableBBG' }}
           shell: bash
         
         - name: Build Kernel
@@ -38,5 +43,6 @@ runs:
                 ${{ inputs.enable_suki && '--enable-suki' || '' }} \
                 ${{ inputs.enable_susfs && '--enable-susfs' || '' }} \
                 ${{ inputs.enable_hymofs && '--enable-hymofs' || '' }} \
+                ${{ inputs.enable_bbg && '--enable-bbg' || '' }} \
                 --disable-samsung-protection
           shell: bash

@@ -1,4 +1,4 @@
-name: Build with SukiSU Ultra SuSFS + HymoFS
+name: Build with KernelSU SuSFS
 
 permissions:
   contents: write
@@ -11,9 +11,9 @@ jobs:
     uses: ./.github/workflows/reusable_build.yml
     with:
       enable_hymofs: true
-      enable_susfs: true
-      enable_ksu: false
-      enable_suki: true
+      enable_susfs: false
+      enable_ksu: true
+      enable_suki: false
       enable_bbg: true
     secrets:
       GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
@@ -52,7 +52,7 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.git_tag }}
           release_name: |
-            ${{ needs.build.outputs.kernel_ver }} Kernel-${{ needs.build.outputs.samsung_patchlevel }} SukiSU with SuSFS+HymoFS ${{ needs.build.outputs.ksu_ver }}
+            ${{ needs.build.outputs.kernel_ver }} Kernel-${{ needs.build.outputs.samsung_patchlevel }} KernelSU with SuSFS ${{ needs.build.outputs.ksu_ver }}
           files: "artifacts/*"
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           

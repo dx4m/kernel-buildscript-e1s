@@ -1,4 +1,4 @@
-name: Build with KernelSU SuSFS
+name: Build with KernelSU HymoFS + BBG
 
 permissions:
   contents: write

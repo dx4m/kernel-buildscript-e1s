@@ -18,4 +18,5 @@ runs:
         gpg --batch --yes --output artifacts/boot.img.sig --detach-sig artifacts/boot.img
         gpg --batch --yes --output artifacts/boot.img.tar.sig --detach-sig artifacts/boot.img.tar
         gpg --batch --yes --output artifacts/Image.sig --detach-sig artifacts/Image
+        gpg --batch --yes --output artifacts/AK3-Kernel.zip.sig --detach-sig artifacts/AK3-Kernel.zip
       shell: bash

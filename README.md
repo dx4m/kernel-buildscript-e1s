@@ -7,6 +7,7 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr/dx4m/kernel-buildscript-e1s?color=%230055AA)](https://github.com/dx4m/kernel-buildscript-e1s/pulls)
 ![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/dx4m/kernel-buildscript-e1s/boot.img.tar?color=%2300AA11)
 ![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/dx4m/kernel-buildscript-e1s/boot.img?color=%2300AA11)
+![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/dx4m/kernel-buildscript-e1s/AK3-Kernel.zip?color=%2300AA11)
 
 
 

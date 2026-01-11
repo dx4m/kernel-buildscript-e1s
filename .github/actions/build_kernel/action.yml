@@ -46,3 +46,16 @@ runs:
                 ${{ inputs.enable_bbg && '--enable-bbg' || '' }} \
                 --disable-samsung-protection
           shell: bash
+        
+        - name: Clone AK3 Template
+          run: |
+            git clone https://github.com/dx4m/AnyKernel3-S921B.git kernelbuild/AK3
+          shell: bash
+          
+        - name: Building AK3 archive
+          run: |
+            cp out/arch/arm64/boot/Image kernelbuild/AK3/Image
+            cd kernelbuild/AK3/
+            zip -r9 ../../AK3-Kernel.zip * -x .git README.md *placeholder
+            cd -
+          shell: bash

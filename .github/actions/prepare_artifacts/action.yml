@@ -12,5 +12,6 @@ runs:
         cp boot.img artifacts/ || true
         cp boot.img.tar artifacts/ || true
         cp out/arch/arm64/boot/Image artifacts/ || true
+        cp AK3-Kernel.zip artifacts/AK3-Kernel.zip || true
         cp public.asc artifacts/gpg_public_key.asc || true
       shell: bash

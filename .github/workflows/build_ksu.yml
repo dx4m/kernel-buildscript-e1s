@@ -18,10 +18,10 @@ jobs:
     uses: ./.github/workflows/reusable_build.yml
     with:
       enable_hymofs: false
-      enable_susfs: ${{ github.event.inputs.sus }}
+      enable_susfs: ${{ github.event.inputs.sus == 'true' }}
       enable_ksu: true
       enable_suki: false
-      enable_bbg: ${{ github.event.inputs.bbg }}
+      enable_bbg: ${{ github.event.inputs.bbg == 'true' }}
     secrets:
       GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
       

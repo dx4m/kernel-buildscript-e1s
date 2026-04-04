@@ -27,8 +27,9 @@ CLEAN=false
 CONFIG=false
 SETVERSION=""
 LOCALVERSION=""
+PATCHLEVEL="$(./setup_buildchain.sh --getSamsungPatchLevel)"
 
-VERSION="-android14-11-dx4m"
+VERSION="-android14-11-${PATCHLEVEL}-dx4m"
 TARGETSOC="s5e9945"
 
 if [ ! -d $PREBUILTS ]; then
@@ -296,6 +297,12 @@ if [ -e $OUTPUT_DIR/arch/arm64/boot/Image ]; then
 	echo "[✅] Boot image generated at ${CURRENT_DIR}/boot.img"
 	tar -cf $CURRENT_DIR/boot.img.tar boot.img
 	echo "[✅] Odin flashable image at ${CURRENT_DIR}/boot.img.tar"
+	
+	cp $OUTPUT_DIR/arch/arm64/boot/Image $KERNELBUILD/AK3/Image
+        cd $KERNELBUILD/AK3/
+        zip -r9 ../../AK3-Kernel.zip * -x .git README.md *placeholder
+        cd $CURRENT_DIR
+        echo "[✅] AnyKernel3 image at ${CURRENT_DIR}/AK3-Kernel.zip"
 else
 	echo "[❌] Kernel build failed."
 fi

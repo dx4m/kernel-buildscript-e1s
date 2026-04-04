@@ -2,5 +2,6 @@ out/
 kernelbuild
 boot.img
 boot.img.tar
+AK3-Kernel.zip
 .repo/
 *:Zone.Identifier

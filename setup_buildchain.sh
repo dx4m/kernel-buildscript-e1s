@@ -55,6 +55,14 @@ function getSamsungKernel() {
 	echo "[✅] Done."
 }
 
+function getAnyKernel() {
+	echo "[💠] Getting AnyKernel3 from github"
+	cd $KERNELBUILD
+	git clone https://github.com/dx4m/AnyKernel3-S921B.git -b e1s AK3
+	cd ..
+	echo "[✅] Done."
+}
+
 function movePrebuilts() {
 	echo "[💠] Moving buildchain from AOSP Buildchain to ${KERNELBUILD} folder"
 	mv $BUILDCHAIN/tools $TOOLS
@@ -104,7 +112,7 @@ function getKernelSU() {
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 		
 		if [ "$DISABLE_LKM" = false ]; then
-			sed -i 's/#ifdef MODULE/#ifndef MODULE/g' KernelSU/kernel/supercalls.c
+			sed -i 's/#ifdef MODULE/#ifndef MODULE/g' KernelSU/kernel/supercall/dispatch.c
 		fi
 		
         cd $CURRENT_DIR
@@ -170,6 +178,7 @@ function getBBG(){
 
 function getEverything(){
 	getSamsungKernel $KERNELSU_BRANCH
+	getAnyKernel
 	if [ "$ENABLESUKI" = true ]; then
 		getSukiSU
 	fi
@@ -359,7 +368,7 @@ fi
 if [ "$DISABLE_LKM" = false ] && [ "$ENABLEKSU" = true ]; then
 	echo -e "${YELLOW}WARNING: Since KernelSU v3.0.0, GKI mode was deprecated. It works but you get a annoying warning in the manager, which you can't get rid of.${NC}"
 	echo -e "${YELLOW}So we suppress KSU to be LKM mode which is fake obviously.${NC}"
-	echo -e "${YELLOW}When you don't want this add the \"--disableFakeLKM\" flag to the setup_buildchain.sh${NC}"
+	echo -e "${YELLOW}When you don't want this, add the \"--disableFakeLKM\" flag to the setup_buildchain.sh${NC}"
 fi
 
 if [ "$CLEAN_KERNEL" = true ]; then

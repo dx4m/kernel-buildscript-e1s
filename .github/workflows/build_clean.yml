@@ -5,6 +5,10 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      bbg:
+        type: boolean
+        description: Enable Baseband-Guard
 
 jobs:
   build:
@@ -14,7 +18,7 @@ jobs:
       enable_susfs: false
       enable_ksu: false
       enable_suki: false
-      enable_bbg: false
+      enable_bbg: ${{ github.event.inputs.bbg == 'true' }}
     secrets:
       GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
       
@@ -38,7 +42,7 @@ jobs:
         with:
           kernel_ver: ${{ needs.build.outputs.kernel_ver }}
           samsung_patchlevel: ${{ needs.build.outputs.samsung_patchlevel }}
-          tag_ver: ${{ needs.build.outputs.tag_ver }}
+          tag_ver: ${{ needs.build.outputs.tag_ver }}-${{ needs.build.outputs.enable_bbg }}
           ksu_ver: ${{ needs.build.outputs.ksu_ver }}
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           enable_hymofs: ${{ needs.build.outputs.enable_hymofs }}

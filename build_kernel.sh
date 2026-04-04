@@ -299,9 +299,9 @@ if [ -e $OUTPUT_DIR/arch/arm64/boot/Image ]; then
 	echo "[✅] Odin flashable image at ${CURRENT_DIR}/boot.img.tar"
 	
 	cp $OUTPUT_DIR/arch/arm64/boot/Image $KERNELBUILD/AK3/Image
-        cd $KERNELBUILD/AK3/
-        zip -r9 ../../AK3-Kernel.zip * -x .git README.md *placeholder
-        cd $CURRENT_DIR
+	cd $KERNELBUILD/AK3/
+	zip -q -r9 ../../AK3-Kernel.zip * -x .git README.md *placeholder
+	cd $CURRENT_DIR
         echo "[✅] AnyKernel3 image at ${CURRENT_DIR}/AK3-Kernel.zip"
 else
 	echo "[❌] Kernel build failed."

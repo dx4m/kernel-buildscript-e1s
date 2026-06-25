@@ -34,7 +34,6 @@ ENABLEKSU=false
 CLEAN_KERNEL=false
 PRINTHELP=false
 SAMSUNG_PATCH_LEVEL=false
-HYMOFS_PATCH=false
 DISABLE_LKM=false
 ENABLE_BBG=false
 
@@ -147,23 +146,6 @@ function getSuSFS(){
         echo "[✅] Done."
 }
 
-function getHymoFS(){
-	echo "[💠] Getting HymoFS"
-	
-	cd $KERNEL_DIR
-	if [ "$DISABLESUSFS" = true ]; then
-		curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android14_6.1/patch/hymofs.patch > hymofs.patch
-	else
-		curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android14_6.1/patch/hymofs_with_susfs.patch > hymofs.patch
-	fi
-	echo "[💠] Patching Kernel for HymoFS"
-	patch -p1 --fuzz=3 < hymofs.patch
-	
-	cd $CURRENT_DIR
-    echo "[✅] Done."
-	
-}
-
 #Baseband-Guard to protect important partitions from malicious threats
 function getBBG(){
 	echo "[💠] Getting Baseband-Guard"
@@ -189,10 +171,6 @@ function getEverything(){
 	
 	if [ "$DISABLESUSFS" = false ]; then
 		getSuSFS
-	fi
-	
-	if [ "$HYMOFS_PATCH" = true ]; then
-		getHymoFS
 	fi
 	
 	if [ "$ENABLE_BBG" = true ]; then
@@ -256,14 +234,6 @@ while [[ $# -gt 0 ]]; do
 			DISABLE_LKM=true;
 			shift
 			;;
-		--disableHymoFS)
-            HYMOFS_PATCH=false
-            shift
-            ;;
-		--enableHymoFS)
-            HYMOFS_PATCH=true
-            shift
-            ;;
 		--enableBBG)
             ENABLE_BBG=true
             shift
@@ -303,15 +273,13 @@ if [ "$PRINTHELP" = true ]; then
 	printf "\t--enableSuki (Enables SukiSU Ultra from setup)\n"
 	printf "\t--disableKSU (Disables KernelSU from setup)\n"
 	printf "\t--enableKSU (Enables KernelSU from setup)\n"
-	printf "\t--disableHymoFS (Disables HymoFS from setup)\n"
-	printf "\t--enableHymoFS (Enables HymoFS from setup)\n"
 	printf "\t--disableFakeLKM (Disables fake LKM mode in KernelSU -- Since v3.0.0 GKI mode is deprecated)\n"
 	printf "\t--enableBBG (Enables Baseband-Guard -- Baseband-Guard protects from malicious threads. Default disabled)\n"
 	printf "\t--cleanKernel (Gets a clean Kernel from Github -- e.g. for resetup)\n"
 	printf "\t--help (Prints this message)\n"
 	printf "\t-b [val] (Select different branch of the Samsung Kernel - Default main)\n"
 	printf "\n\n"
-	printf "Default without any options gets SukiSU Ultra +SuSFS -HymoFS -BasebandGuard"
+	printf "Default without any options gets SukiSU Ultra +SuSFS -BasebandGuard"
 	
 	exit 0
 fi

@@ -19,7 +19,6 @@ DISABLE_SAMSUNG_PROTECTION=true
 ENABLE_SUKI=false
 ENABLE_KSU=false
 ENABLE_SUSFS=false
-ENABLE_HYMOFS=false
 ENABLE_BBG=false
 MENUCONFIG=false
 PRINTHELP=false
@@ -58,10 +57,6 @@ while [[ $# -gt 0 ]]; do
             ;;
 		--enable-susfs)
 			ENABLE_SUSFS=true
-			shift
-			;;
-		--enable-hymofs)
-			ENABLE_HYMOFS=true
 			shift
 			;;
 		--disable-bbg)
@@ -114,8 +109,6 @@ if [ "$PRINTHELP" = true ]; then
 	printf "\t--enable-ksu (Enables KernelSU in config. Follow KernelSU building guide)\n"
 	printf "\t--disable-susfs (Disables SuSFS in config.)\n"
 	printf "\t--enable-susfs (Enables SuSFS in config.)\n"
-	printf "\t--disable-hymofs (Disables HymoFS in config.)\n"
-	printf "\t--enable-susfs (Enables HymoFS in config.)\n"
 	printf "\t--disable-bbg (Disables Baseband-Guard in config.)\n"
 	printf "\t--enable-bbg (Enables Baseband-Guard in config.)\n"
 	printf "\t--help (Prints this message)\n"
@@ -221,12 +214,6 @@ if [ "$ENABLE_SUSFS" = true ]; then
 		-e CONFIG_KSU_SUSFS_SUS_MAP
 fi
 
-if [ "$ENABLE_HYMOFS" = true ]; then
-	DISABLE_SAMSUNG_PROTECTION=true
-	"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
-	-e CONFIG_HYMOFS
-fi
-	
 # Disable Samsung Protection
 if [ "$DISABLE_SAMSUNG_PROTECTION" = true ]; then
 	
